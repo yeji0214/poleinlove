@@ -13,3 +13,29 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Record {
+  id              Int      @id @default(autoincrement())
+  performedAt     DateTime
+  skillName       String
+  tags            String[]
+  sessionNote     String?
+  difficultyNote  String?
+  didWellNote     String?
+  improvementNote String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  images Image[]
+}
+
+model Image {
+  id        Int      @id @default(autoincrement())
+  url       String
+  alt       String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  recordId Int
+  record   Record @relation(fields: [recordId], references: [id], onDelete: Cascade)
+}
