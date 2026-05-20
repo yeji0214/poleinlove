@@ -6,7 +6,7 @@ export default function NewRecordPage() {
     <div className="min-h-screen bg-stone-50">
       <header className="mx-auto w-full max-w-xl px-5 pb-4 pt-8">
         <div className="flex items-center gap-4">
-          <Link href="/" className="text-zinc-600 hover:text-zinc-900">
+          <Link href="/records" className="text-zinc-600 hover:text-zinc-900">
             ←
           </Link>
           <div>
