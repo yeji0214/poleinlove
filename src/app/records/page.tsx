@@ -44,7 +44,7 @@ export default async function RecordsPage() {
             href="/records/new"
             className="rounded-2xl bg-rose-300 px-5 py-2.5 text-sm font-medium text-white hover:opacity-90 transition-opacity"
           >
-            + 새 기록
+            + &nbsp;새 기록
           </Link>
         </div>
       </header>

@@ -31,8 +31,8 @@ export default async function RecordDetailPage({
     <div className="min-h-screen bg-stone-50">
       <header className="mx-auto w-full max-w-xl px-5 pb-4 pt-8">
         <div className="flex items-start gap-4">
-          <Link href="/records" className="mt-1 text-zinc-600 hover:text-zinc-900">
-            ←
+          <Link href="/records" className="rounded-xl p-2 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800">
+            <ArrowLeftIcon />
           </Link>
           <div>
             <h1 className="text-xl font-bold text-zinc-900">{record.skillName}</h1>
@@ -79,7 +79,7 @@ export default async function RecordDetailPage({
 
         {/* 어려웠던 점 */}
         {record.difficultyNote && (
-          <section className="rounded-2xl border-l-4 border-l-amber-400 bg-white p-5 shadow-sm">
+          <section className="rounded-2xl border-l-4 border-l-amber-200 bg-white p-5 shadow-sm">
             <h2 className="mb-3 flex items-center gap-2 font-bold text-zinc-900">
               <ExclamationIcon className="text-amber-400" />
               어려웠던 점
@@ -90,7 +90,7 @@ export default async function RecordDetailPage({
 
         {/* 잘됐던 점 */}
         {record.didWellNote && (
-          <section className="rounded-2xl border-l-4 border-l-emerald-400 bg-white p-5 shadow-sm">
+          <section className="rounded-2xl border-l-4 border-l-emerald-200 bg-white p-5 shadow-sm">
             <h2 className="mb-3 flex items-center gap-2 font-bold text-zinc-900">
               <CheckCircleIcon className="text-emerald-400" />
               좋았던 점
@@ -101,9 +101,9 @@ export default async function RecordDetailPage({
 
         {/* 아쉬웠던 점 */}
         {record.improvementNote && (
-          <section className="rounded-2xl border-l-4 border-l-sky-400 bg-white p-5 shadow-sm">
+          <section className="rounded-2xl border-l-4 border-l-sky-200 bg-white p-5 shadow-sm">
             <h2 className="mb-3 flex items-center gap-2 font-bold text-zinc-900">
-              <LightbulbIcon className="text-sky-400" />
+              <ArrowUpCircleIcon className="text-sky-400" />
               아쉬웠던 점
             </h2>
             <p className="text-sm leading-relaxed text-zinc-600">{record.improvementNote}</p>
@@ -111,6 +111,14 @@ export default async function RecordDetailPage({
         )}
       </main>
     </div>
+  )
+}
+
+function ArrowLeftIcon() {
+  return (
+    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+    </svg>
   )
 }
 
@@ -146,10 +154,10 @@ function CheckCircleIcon({ className }: { className?: string }) {
   )
 }
 
-function LightbulbIcon({ className }: { className?: string }) {
+function ArrowUpCircleIcon({ className }: { className?: string }) {
   return (
     <svg className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 11.25l-3-3m0 0l-3 3m3-3v7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
   )
 }
