@@ -5,19 +5,7 @@ import {
   createRecord,
   type CreateRecordState,
 } from "@/app/records/new/actions";
-
-const PRESET_TAGS = [
-  "입문",
-  "초급",
-  "중급",
-  "고급",
-  "후굴",
-  "측굴",
-  "장요",
-  "어깨유연성",
-  "힘기술",
-  "고정폴",
-];
+import { PRESET_TAGS } from "@/lib/constants";
 
 const initialState: CreateRecordState = null;
 
