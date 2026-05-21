@@ -2,6 +2,14 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { TAG_COLORS } from '@/lib/constants'
+import {
+  ArrowLeftIcon,
+  CalendarIcon,
+  ImagePlaceholderIcon,
+  ExclamationIcon,
+  CheckCircleIcon,
+  ArrowUpCircleIcon,
+} from '@/components/ui/icons'
 
 export default async function RecordDetailPage({
   params,
@@ -54,7 +62,7 @@ export default async function RecordDetailPage({
 
         {/* 사진 */}
         <div className="flex aspect-[4/3] w-full items-center justify-center rounded-2xl bg-zinc-100">
-          <ImagePlaceholderIcon className="text-zinc-300" />
+          <ImagePlaceholderIcon className="h-10 w-10 text-zinc-300" />
         </div>
 
         {/* 세션 메모 */}
@@ -99,53 +107,5 @@ export default async function RecordDetailPage({
         )}
       </main>
     </div>
-  )
-}
-
-function ArrowLeftIcon() {
-  return (
-    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-    </svg>
-  )
-}
-
-function CalendarIcon() {
-  return (
-    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" />
-    </svg>
-  )
-}
-
-function ImagePlaceholderIcon({ className }: { className?: string }) {
-  return (
-    <svg className={`h-10 w-10 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 18h16.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-  )
-}
-
-function ExclamationIcon({ className }: { className?: string }) {
-  return (
-    <svg className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-    </svg>
-  )
-}
-
-function CheckCircleIcon({ className }: { className?: string }) {
-  return (
-    <svg className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-  )
-}
-
-function ArrowUpCircleIcon({ className }: { className?: string }) {
-  return (
-    <svg className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15 11.25l-3-3m0 0l-3 3m3-3v7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
   )
 }

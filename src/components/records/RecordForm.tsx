@@ -6,6 +6,12 @@ import {
   type CreateRecordState,
 } from "@/app/records/new/actions";
 import { PRESET_TAGS } from "@/lib/constants";
+import {
+  CameraIcon,
+  ExclamationIcon,
+  CheckCircleIcon,
+  ArrowUpCircleIcon,
+} from "@/components/ui/icons";
 
 const initialState: CreateRecordState = null;
 
@@ -153,79 +159,3 @@ export default function RecordForm() {
   );
 }
 
-function CameraIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={`h-6 w-6 ${className}`}
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={1.5}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"
-      />
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"
-      />
-    </svg>
-  );
-}
-
-function ExclamationIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={`h-5 w-5 ${className}`}
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={2}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
-      />
-    </svg>
-  );
-}
-
-function CheckCircleIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={`h-5 w-5 ${className}`}
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={2}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-      />
-    </svg>
-  );
-}
-
-function ArrowUpCircleIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={`h-5 w-5 ${className}`}
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={2}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M15 11.25l-3-3m0 0l-3 3m3-3v7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-      />
-    </svg>
-  );
-}

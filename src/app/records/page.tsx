@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { TAG_COLORS, PRESET_TAGS } from "@/lib/constants";
+import { SearchIcon, CalendarIcon, ImagePlaceholderIcon } from "@/components/ui/icons";
 
 export default async function RecordsPage() {
   const records = await prisma.record.findMany({
@@ -71,7 +72,7 @@ export default async function RecordsPage() {
                 >
                   {/* 이미지 썸네일 자리 */}
                   <div className="h-24 w-24 shrink-0 rounded-xl bg-zinc-100 flex items-center justify-center">
-                    <ImagePlaceholderIcon className="text-zinc-300" />
+                    <ImagePlaceholderIcon className="h-6 w-6 text-zinc-300" />
                   </div>
 
                   {/* 내용 */}
@@ -112,59 +113,5 @@ export default async function RecordsPage() {
         )}
       </main>
     </div>
-  );
-}
-
-function SearchIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={`h-4 w-4 ${className}`}
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={2}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
-      />
-    </svg>
-  );
-}
-
-function CalendarIcon() {
-  return (
-    <svg
-      className="h-3 w-3"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={2}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z"
-      />
-    </svg>
-  );
-}
-
-function ImagePlaceholderIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={`h-6 w-6 ${className}`}
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={1.5}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 18h16.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-      />
-    </svg>
   );
 }
