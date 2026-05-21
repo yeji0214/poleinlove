@@ -12,6 +12,7 @@ import {
   CheckCircleIcon,
   ArrowUpCircleIcon,
 } from "@/components/ui/icons";
+import { NoteCard } from "@/components/ui/NoteCard";
 
 const initialState: CreateRecordState = null;
 
@@ -106,47 +107,32 @@ export default function RecordForm() {
         </div>
       </section>
 
-      {/* 어려웠던 점 */}
-      <section className="rounded-2xl border-l-4 border-l-amber-200 bg-white p-5 shadow-sm">
-        <h2 className="mb-4 flex items-center gap-2 text-base font-bold text-zinc-900">
-          <ExclamationIcon className="text-amber-400" />
-          어려웠던 점
-        </h2>
+      <NoteCard borderColor="border-l-amber-200" icon={<ExclamationIcon className="text-amber-400" />} title="어려웠던 점">
         <textarea
           name="difficultyNote"
           rows={3}
           placeholder="어떤 게 힘들었나요?"
           className="w-full resize-none border-b border-zinc-200 py-2 text-sm text-zinc-700 outline-none placeholder:text-zinc-400"
         />
-      </section>
+      </NoteCard>
 
-      {/* 잘 됐던 점 */}
-      <section className="rounded-2xl border-l-4 border-l-emerald-200 bg-white p-5 shadow-sm">
-        <h2 className="mb-4 flex items-center gap-2 text-base font-bold text-zinc-900">
-          <CheckCircleIcon className="text-emerald-400" />
-          좋았던 점
-        </h2>
+      <NoteCard borderColor="border-l-emerald-200" icon={<CheckCircleIcon className="text-emerald-400" />} title="좋았던 점">
         <textarea
           name="didWellNote"
           rows={3}
           placeholder="무엇을 잘 했나요?"
           className="w-full resize-none border-b border-zinc-200 py-2 text-sm text-zinc-700 outline-none placeholder:text-zinc-400"
         />
-      </section>
+      </NoteCard>
 
-      {/* 다음에 개선할 점 */}
-      <section className="rounded-2xl border-l-4 border-l-sky-200 bg-white p-5 shadow-sm">
-        <h2 className="mb-4 flex items-center gap-2 text-base font-bold text-zinc-900">
-          <ArrowUpCircleIcon className="text-sky-400" />
-          아쉬웠던 점
-        </h2>
+      <NoteCard borderColor="border-l-sky-200" icon={<ArrowUpCircleIcon className="text-sky-400" />} title="아쉬웠던 점">
         <textarea
           name="improvementNote"
           rows={3}
           placeholder="다음에 신경써볼 것은?"
           className="w-full resize-none border-b border-zinc-200 py-2 text-sm text-zinc-700 outline-none placeholder:text-zinc-400"
         />
-      </section>
+      </NoteCard>
 
       <button
         type="submit"

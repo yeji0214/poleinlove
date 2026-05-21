@@ -10,6 +10,7 @@ import {
   CheckCircleIcon,
   ArrowUpCircleIcon,
 } from '@/components/ui/icons'
+import { NoteCard } from '@/components/ui/NoteCard'
 
 export default async function RecordDetailPage({
   params,
@@ -73,37 +74,22 @@ export default async function RecordDetailPage({
           </section>
         )}
 
-        {/* 어려웠던 점 */}
         {record.difficultyNote && (
-          <section className="rounded-2xl border-l-4 border-l-amber-200 bg-white p-5 shadow-sm">
-            <h2 className="mb-3 flex items-center gap-2 font-bold text-zinc-900">
-              <ExclamationIcon className="text-amber-400" />
-              어려웠던 점
-            </h2>
+          <NoteCard borderColor="border-l-amber-200" icon={<ExclamationIcon className="text-amber-400" />} title="어려웠던 점">
             <p className="text-sm leading-relaxed text-zinc-600">{record.difficultyNote}</p>
-          </section>
+          </NoteCard>
         )}
 
-        {/* 잘됐던 점 */}
         {record.didWellNote && (
-          <section className="rounded-2xl border-l-4 border-l-emerald-200 bg-white p-5 shadow-sm">
-            <h2 className="mb-3 flex items-center gap-2 font-bold text-zinc-900">
-              <CheckCircleIcon className="text-emerald-400" />
-              좋았던 점
-            </h2>
+          <NoteCard borderColor="border-l-emerald-200" icon={<CheckCircleIcon className="text-emerald-400" />} title="좋았던 점">
             <p className="text-sm leading-relaxed text-zinc-600">{record.didWellNote}</p>
-          </section>
+          </NoteCard>
         )}
 
-        {/* 아쉬웠던 점 */}
         {record.improvementNote && (
-          <section className="rounded-2xl border-l-4 border-l-sky-200 bg-white p-5 shadow-sm">
-            <h2 className="mb-3 flex items-center gap-2 font-bold text-zinc-900">
-              <ArrowUpCircleIcon className="text-sky-400" />
-              아쉬웠던 점
-            </h2>
+          <NoteCard borderColor="border-l-sky-200" icon={<ArrowUpCircleIcon className="text-sky-400" />} title="아쉬웠던 점">
             <p className="text-sm leading-relaxed text-zinc-600">{record.improvementNote}</p>
-          </section>
+          </NoteCard>
         )}
       </main>
     </div>
