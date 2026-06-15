@@ -12,6 +12,7 @@ export async function createRecord(
   const skillName = formData.get('skillName') as string
   const performedAt = formData.get('performedAt') as string
   const tagsRaw = formData.get('tags') as string
+  const imageUrlsRaw = formData.get('imageUrls') as string
 
   if (!skillName || !performedAt) {
     return { error: '기술명과 날짜는 필수입니다.' }
@@ -21,8 +22,12 @@ export async function createRecord(
     ? tagsRaw.split(',').map((t) => t.trim()).filter(Boolean)
     : []
 
+  const imageUrls = imageUrlsRaw
+    ? imageUrlsRaw.split(',').filter(Boolean)
+    : []
+
   try {
-    await prisma.record.create({
+    const record = await prisma.record.create({
       data: {
         skillName,
         performedAt: new Date(performedAt),
@@ -33,6 +38,16 @@ export async function createRecord(
         improvementNote: (formData.get('improvementNote') as string) || null,
       },
     })
+
+    if (imageUrls.length > 0) {
+      await prisma.image.createMany({
+        data: imageUrls.map((url, i) => ({
+          url,
+          recordId: record.id,
+          order: i,
+        })),
+      })
+    }
   } catch {
     return { error: '저장 중 오류가 발생했습니다.' }
   }

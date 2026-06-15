@@ -41,3 +41,32 @@
 
 - 이미지 파일은 외부 스토리지에 저장하고, DB에는 이미지 URL과 메타데이터를 저장하는 구조를 고려한다.
 - 초기에는 단순 업로드 구조로 시작하고, 이후 다중 이미지/정렬/최적화 기능을 확장할 수 있도록 한다.
+
+## 8. 사진 업로드 구현 방식
+
+### 클라이언트 직접 업로드 (브라우저 → Supabase Storage)
+
+서버를 거치지 않고 브라우저에서 Supabase Storage로 직접 업로드한다.
+
+서버 경유 방식은 구현이 단순하지만 Next.js 기본 body 제한(4MB)에 걸리고, 파일이 불필요하게 서버를 한 번 더 거친다. Supabase anon key는 `NEXT_PUBLIC_` 접두사로 클라이언트에 노출되어도 괜찮은 키이고, 버킷 RLS 정책으로 권한을 제어하므로 보안 문제가 없다.
+
+### 즉시 업로드 (파일 선택 시점)
+
+폼 제출 시가 아닌, 사진을 선택하는 순간 바로 Supabase Storage에 업로드한다.
+
+폼 제출 시 업로드하면 저장 버튼을 눌렀을 때 업로드 대기 시간이 생긴다. 즉시 업로드하면 미리보기와 업로드가 동시에 처리되어 제출 시 지연이 없다. 단, 업로드 후 폼을 제출하지 않고 나가면 Storage에 고아(orphan) 파일이 남는다. 개인 앱 규모에서는 허용 가능한 트레이드오프로 판단했다.
+
+### URL을 hidden input으로 전달
+
+업로드된 이미지 URL을 `imageUrls` hidden input에 콤마(,)로 이어 붙여 Server Action에 전달한다. Server Action은 Record 생성 후 `prisma.image.createMany`로 Image 레코드를 일괄 저장한다. Server Action은 파일 바이너리를 다루지 않고 URL 문자열만 받는다.
+
+### Supabase Storage RLS 설정
+
+Public 버킷은 읽기(SELECT)만 기본 허용된다. 쓰기(INSERT)는 별도 RLS 정책 추가가 필요하다.
+
+```sql
+CREATE POLICY "Allow anon uploads"
+ON storage.objects
+FOR INSERT TO anon
+WITH CHECK (bucket_id = 'record-images');
+```

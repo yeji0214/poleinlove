@@ -20,6 +20,7 @@ export default async function RecordDetailPage({
   const { id } = await params
   const record = await prisma.record.findUnique({
     where: { id: Number(id) },
+    include: { images: { orderBy: { order: 'asc' } } },
   })
 
   if (!record) notFound()
@@ -62,9 +63,23 @@ export default async function RecordDetailPage({
         )}
 
         {/* 사진 */}
-        <div className="flex aspect-[4/3] w-full items-center justify-center rounded-2xl bg-zinc-100">
-          <ImagePlaceholderIcon className="h-10 w-10 text-zinc-300" />
-        </div>
+        {record.images.length > 0 ? (
+          <div className="flex flex-col gap-2">
+            {record.images.map((image) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={image.id}
+                src={image.url}
+                alt={image.alt ?? record.skillName}
+                className="w-full rounded-2xl object-cover"
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="flex aspect-[4/3] w-full items-center justify-center rounded-2xl bg-zinc-100">
+            <ImagePlaceholderIcon className="h-10 w-10 text-zinc-300" />
+          </div>
+        )}
 
         {/* 세션 메모 */}
         {record.sessionNote && (

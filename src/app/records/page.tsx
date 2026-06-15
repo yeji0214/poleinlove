@@ -6,6 +6,7 @@ import { SearchIcon, CalendarIcon, ImagePlaceholderIcon } from "@/components/ui/
 export default async function RecordsPage() {
   const records = await prisma.record.findMany({
     orderBy: { performedAt: "desc" },
+    include: { images: { orderBy: { order: "asc" }, take: 1 } },
   });
 
   return (
@@ -70,10 +71,19 @@ export default async function RecordsPage() {
                   href={`/records/${record.id}`}
                   className="flex gap-4 rounded-2xl bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
                 >
-                  {/* 이미지 썸네일 자리 */}
-                  <div className="h-24 w-24 shrink-0 rounded-xl bg-zinc-100 flex items-center justify-center">
-                    <ImagePlaceholderIcon className="h-6 w-6 text-zinc-300" />
-                  </div>
+                  {/* 이미지 썸네일 */}
+                  {record.images[0] ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={record.images[0].url}
+                      alt={record.images[0].alt ?? record.skillName}
+                      className="h-24 w-24 shrink-0 rounded-xl object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-xl bg-zinc-100">
+                      <ImagePlaceholderIcon className="h-6 w-6 text-zinc-300" />
+                    </div>
+                  )}
 
                   {/* 내용 */}
                   <div className="flex min-w-0 flex-col justify-center gap-1">

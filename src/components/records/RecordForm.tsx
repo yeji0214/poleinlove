@@ -1,11 +1,12 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import {
   createRecord,
   type CreateRecordState,
 } from "@/app/records/new/actions";
 import { PRESET_TAGS } from "@/lib/constants";
+import { supabase } from "@/lib/supabase";
 import {
   CameraIcon,
   ExclamationIcon,
@@ -22,11 +23,40 @@ export default function RecordForm() {
     initialState,
   );
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   function toggleTag(tag: string) {
     setSelectedTags((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
     );
+  }
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
+
+    setUploading(true);
+    for (const file of files) {
+      const ext = file.name.split(".").pop() ?? "jpg";
+      const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabase.storage
+        .from("record-images")
+        .upload(path, file);
+      if (!error) {
+        const { data } = supabase.storage
+          .from("record-images")
+          .getPublicUrl(path);
+        setImageUrls((prev) => [...prev, data.publicUrl]);
+      }
+    }
+    setUploading(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  function removeImage(url: string) {
+    setImageUrls((prev) => prev.filter((u) => u !== url));
   }
 
   return (
@@ -98,16 +128,62 @@ export default function RecordForm() {
       {/* 사진 */}
       <section className="rounded-2xl bg-white p-5 shadow-sm">
         <h2 className="mb-4 text-base font-bold text-zinc-900">사진</h2>
-        <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-zinc-300 py-10">
+
+        {imageUrls.length > 0 && (
+          <div className="mb-3 grid grid-cols-3 gap-2">
+            {imageUrls.map((url) => (
+              <div key={url} className="relative aspect-square">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={url}
+                  alt=""
+                  className="h-full w-full rounded-xl object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeImage(url)}
+                  className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/50 text-xs text-white"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={handleFileChange}
+        />
+        <input type="hidden" name="imageUrls" value={imageUrls.join(",")} />
+
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          className="flex w-full flex-col items-center gap-2 rounded-xl border border-dashed border-zinc-300 py-10 transition-colors hover:border-zinc-400 disabled:opacity-60"
+        >
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-rose-50">
             <CameraIcon className="text-rose-400" />
           </div>
-          <p className="text-sm font-medium text-zinc-700">사진 추가</p>
-          <p className="text-xs text-zinc-400">드래그하거나 탭해서 업로드</p>
-        </div>
+          <p className="text-sm font-medium text-zinc-700">
+            {uploading ? "업로드 중..." : "사진 추가"}
+          </p>
+          {!uploading && (
+            <p className="text-xs text-zinc-400">탭해서 업로드</p>
+          )}
+        </button>
       </section>
 
-      <NoteCard borderColor="border-l-amber-200" icon={<ExclamationIcon className="text-amber-400" />} title="어려웠던 점">
+      <NoteCard
+        borderColor="border-l-amber-200"
+        icon={<ExclamationIcon className="text-amber-400" />}
+        title="어려웠던 점"
+      >
         <textarea
           name="difficultyNote"
           rows={3}
@@ -116,7 +192,11 @@ export default function RecordForm() {
         />
       </NoteCard>
 
-      <NoteCard borderColor="border-l-emerald-200" icon={<CheckCircleIcon className="text-emerald-400" />} title="좋았던 점">
+      <NoteCard
+        borderColor="border-l-emerald-200"
+        icon={<CheckCircleIcon className="text-emerald-400" />}
+        title="좋았던 점"
+      >
         <textarea
           name="didWellNote"
           rows={3}
@@ -125,7 +205,11 @@ export default function RecordForm() {
         />
       </NoteCard>
 
-      <NoteCard borderColor="border-l-sky-200" icon={<ArrowUpCircleIcon className="text-sky-400" />} title="아쉬웠던 점">
+      <NoteCard
+        borderColor="border-l-sky-200"
+        icon={<ArrowUpCircleIcon className="text-sky-400" />}
+        title="아쉬웠던 점"
+      >
         <textarea
           name="improvementNote"
           rows={3}
@@ -136,7 +220,7 @@ export default function RecordForm() {
 
       <button
         type="submit"
-        disabled={pending}
+        disabled={pending || uploading}
         className="w-full rounded-2xl bg-rose-300 py-4 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
       >
         {pending ? "저장 중..." : "기록 저장"}
@@ -144,4 +228,3 @@ export default function RecordForm() {
     </form>
   );
 }
-
