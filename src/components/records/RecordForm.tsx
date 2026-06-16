@@ -130,7 +130,7 @@ export default function RecordForm({
                 key={tag}
                 type="button"
                 onClick={() => toggleTag(tag)}
-                className={`rounded-full px-4 py-1.5 text-sm transition-colors ${
+                className={`cursor-pointer rounded-full px-4 py-1.5 text-sm transition-colors ${
                   selectedTags.includes(tag)
                     ? "bg-zinc-800 text-white"
                     : "bg-stone-100 text-zinc-700 hover:bg-stone-200"
@@ -161,7 +161,7 @@ export default function RecordForm({
                 <button
                   type="button"
                   onClick={() => removeImage(url)}
-                  className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/50 text-xs text-white"
+                  className="absolute right-1 top-1 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-black/50 text-xs text-white"
                 >
                   ×
                 </button>
@@ -184,7 +184,7 @@ export default function RecordForm({
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
-          className="flex w-full flex-col items-center gap-2 rounded-xl border border-dashed border-zinc-300 py-10 transition-colors hover:border-zinc-400 disabled:opacity-60"
+          className="flex w-full cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed border-zinc-300 py-10 transition-colors hover:border-zinc-400 disabled:cursor-not-allowed disabled:opacity-60"
         >
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-rose-50">
             <CameraIcon className="text-rose-400" />
@@ -243,7 +243,7 @@ export default function RecordForm({
       <button
         type="submit"
         disabled={pending || uploading}
-        className="w-full rounded-2xl bg-rose-300 py-4 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+        className="w-full cursor-pointer rounded-2xl bg-rose-300 py-4 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {pending ? "저장 중..." : submitLabel}
       </button>

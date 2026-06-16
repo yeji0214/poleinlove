@@ -19,7 +19,7 @@ export function DeleteRecordButton({ id }: { id: number }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-xl p-2 text-zinc-500 transition-colors hover:bg-red-50 hover:text-red-500"
+        className="cursor-pointer rounded-xl p-2 text-zinc-500 transition-colors hover:bg-red-50 hover:text-red-500"
         aria-label="기록 삭제"
       >
         <TrashIcon />
@@ -37,7 +37,7 @@ export function DeleteRecordButton({ id }: { id: number }) {
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="absolute right-4 top-4 text-zinc-400 transition-colors hover:text-zinc-700"
+              className="absolute right-4 top-4 cursor-pointer text-zinc-400 transition-colors hover:text-zinc-700"
               aria-label="닫기"
             >
               <svg
@@ -63,7 +63,7 @@ export function DeleteRecordButton({ id }: { id: number }) {
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="flex-1 rounded-xl bg-stone-100 py-2.5 text-sm font-semibold text-zinc-700 transition-colors hover:bg-stone-200"
+                className="flex-1 cursor-pointer rounded-xl bg-stone-100 py-2.5 text-sm font-semibold text-zinc-700 transition-colors hover:bg-stone-200"
               >
                 취소
               </button>
@@ -71,7 +71,7 @@ export function DeleteRecordButton({ id }: { id: number }) {
                 type="button"
                 onClick={handleDelete}
                 disabled={pending}
-                className="flex-1 rounded-xl bg-red-400 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-500 disabled:opacity-50"
+                className="flex-1 cursor-pointer rounded-xl bg-red-400 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {pending ? "삭제 중..." : "삭제"}
               </button>

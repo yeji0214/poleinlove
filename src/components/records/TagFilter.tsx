@@ -23,7 +23,7 @@ export function TagFilter({ activeTag, query }: Props) {
           key={tag}
           type="button"
           onClick={() => handleClick(tag)}
-          className={`shrink-0 rounded-full px-4 py-1.5 text-sm transition-colors ${
+          className={`shrink-0 cursor-pointer rounded-full px-4 py-1.5 text-sm transition-colors ${
             activeTag === tag
               ? "bg-zinc-800 text-white"
               : "border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50"
