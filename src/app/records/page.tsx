@@ -1,10 +1,18 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { TAG_COLORS, PRESET_TAGS } from "@/lib/constants";
+import { TAG_COLORS } from "@/lib/constants";
 import { SearchIcon, CalendarIcon, ImagePlaceholderIcon } from "@/components/ui/icons";
+import { TagFilter } from "@/components/records/TagFilter";
 
-export default async function RecordsPage() {
+export default async function RecordsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tag?: string }>;
+}) {
+  const { tag } = await searchParams;
+
   const records = await prisma.record.findMany({
+    where: tag ? { tags: { has: tag } } : undefined,
     orderBy: { performedAt: "desc" },
     include: { images: { orderBy: { order: "asc" }, take: 1 } },
   });
@@ -39,29 +47,34 @@ export default async function RecordsPage() {
         </div>
 
         {/* 태그 필터 */}
-        <div className="mb-5 flex flex-wrap gap-2">
-          {PRESET_TAGS.map((tag) => (
-            <button
-              key={tag}
-              type="button"
-              disabled
-              className="shrink-0 rounded-full border border-zinc-200 bg-white px-4 py-1.5 text-sm text-zinc-600"
-            >
-              {tag}
-            </button>
-          ))}
-        </div>
+        <TagFilter activeTag={tag} />
 
         {/* 기록 목록 */}
         {records.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-24 text-center">
-            <p className="text-zinc-500">아직 기록이 없어요</p>
-            <Link
-              href="/records/new"
-              className="text-sm text-zinc-400 underline underline-offset-2"
-            >
-              첫 기록 남기기
-            </Link>
+            {tag ? (
+              <>
+                <p className="text-zinc-500">
+                  <span className="font-medium text-zinc-700">#{tag}</span> 태그의 기록이 없어요
+                </p>
+                <Link
+                  href="/records"
+                  className="text-sm text-zinc-400 underline underline-offset-2"
+                >
+                  전체 보기
+                </Link>
+              </>
+            ) : (
+              <>
+                <p className="text-zinc-500">아직 기록이 없어요</p>
+                <Link
+                  href="/records/new"
+                  className="text-sm text-zinc-400 underline underline-offset-2"
+                >
+                  첫 기록 남기기
+                </Link>
+              </>
+            )}
           </div>
         ) : (
           <ul className="flex flex-col gap-3">
@@ -105,12 +118,12 @@ export default async function RecordsPage() {
                     )}
                     {record.tags.length > 0 && (
                       <div className="mt-1 flex flex-wrap gap-1">
-                        {record.tags.map((tag) => (
+                        {record.tags.map((t) => (
                           <span
-                            key={tag}
-                            className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${TAG_COLORS[tag] ?? "bg-stone-100 text-zinc-600"}`}
+                            key={t}
+                            className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${TAG_COLORS[t] ?? "bg-stone-100 text-zinc-600"}`}
                           >
-                            {tag}
+                            {t}
                           </span>
                         ))}
                       </div>
