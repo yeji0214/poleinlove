@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
+import { getTodayDateString } from '@/lib/date'
 
 export type CreateRecordState = { error: string } | null
 
@@ -16,6 +17,10 @@ export async function createRecord(
 
   if (!skillName || !performedAt) {
     return { error: '기술명과 날짜는 필수입니다.' }
+  }
+
+  if (performedAt > getTodayDateString()) {
+    return { error: '미래 날짜는 선택할 수 없습니다.' }
   }
 
   const tags = tagsRaw

@@ -4,6 +4,7 @@ import { useActionState, useRef, useState } from "react";
 import { type CreateRecordState } from "@/app/records/new/actions";
 import { PRESET_TAGS } from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
+import { getTodayDateString } from "@/lib/date";
 import {
   CameraIcon,
   ExclamationIcon,
@@ -47,7 +48,28 @@ export default function RecordForm({
   const [performedAt, setPerformedAt] = useState(
     defaultValues?.performedAt ?? "",
   );
-  const isValid = skillName.trim() !== "" && performedAt !== "";
+  const [skillNameTouched, setSkillNameTouched] = useState(false);
+  const [performedAtTouched, setPerformedAtTouched] = useState(false);
+
+  function handleSkillNameChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const value = e.target.value;
+    if (skillName !== "" && value === "") setSkillNameTouched(true);
+    setSkillName(value);
+  }
+
+  function handlePerformedAtChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const value = e.target.value;
+    if (performedAt !== "" && value === "") setPerformedAtTouched(true);
+    setPerformedAt(value);
+  }
+
+  const isFutureDate =
+    performedAt !== "" && performedAt > getTodayDateString();
+  const performedAtError =
+    (performedAtTouched && performedAt === "") || isFutureDate;
+  const skillNameError = skillNameTouched && skillName.trim() === "";
+  const hasEmptyRequired = skillName.trim() === "" || performedAt === "";
+  const isValid = !hasEmptyRequired && !isFutureDate;
 
   function toggleTag(tag: string) {
     setSelectedTags((prev) =>
@@ -110,10 +132,23 @@ export default function RecordForm({
               name="performedAt"
               type="date"
               required
+              max={getTodayDateString()}
               value={performedAt}
-              onChange={(e) => setPerformedAt(e.target.value)}
-              className="rounded-xl border border-zinc-200 px-3 py-2.5 text-sm text-zinc-700 outline-none placeholder:text-zinc-400 focus:border-zinc-400"
+              onChange={handlePerformedAtChange}
+              onBlur={() => setPerformedAtTouched(true)}
+              aria-invalid={performedAtError}
+              className={`rounded-xl border px-3 py-2.5 text-sm text-zinc-700 outline-none placeholder:text-zinc-400 ${
+                performedAtError
+                  ? "border-red-300 focus:border-red-400"
+                  : "border-zinc-200 focus:border-zinc-400"
+              }`}
             />
+            <p className="h-4 truncate text-xs text-red-500">
+              {performedAtError &&
+                (isFutureDate
+                  ? "오늘 이전 날짜만 선택할 수 있어요"
+                  : "날짜를 선택해주세요")}
+            </p>
           </div>
           <div className="flex flex-col gap-1">
             <label
@@ -128,10 +163,19 @@ export default function RecordForm({
               type="text"
               required
               value={skillName}
-              onChange={(e) => setSkillName(e.target.value)}
+              onChange={handleSkillNameChange}
+              onBlur={() => setSkillNameTouched(true)}
+              aria-invalid={skillNameError}
               placeholder="예) 발레리나, 버터플라이"
-              className="rounded-xl border border-zinc-200 px-3 py-2.5 text-sm text-zinc-700 outline-none placeholder:text-zinc-400 focus:border-zinc-400"
+              className={`rounded-xl border px-3 py-2.5 text-sm text-zinc-700 outline-none placeholder:text-zinc-400 ${
+                skillNameError
+                  ? "border-red-300 focus:border-red-400"
+                  : "border-zinc-200 focus:border-zinc-400"
+              }`}
             />
+            <p className="h-4 truncate text-xs text-red-500">
+              {skillNameError && "기술명을 입력해주세요"}
+            </p>
           </div>
         </div>
         <div>
@@ -260,11 +304,9 @@ export default function RecordForm({
         >
           {pending ? "저장 중..." : submitLabel}
         </button>
-        {!isValid && (
-          <p className="text-center text-xs text-zinc-400">
-            날짜와 기술명을 입력하면 저장할 수 있어요
-          </p>
-        )}
+        <p className="h-4 text-center text-xs text-zinc-400">
+          {hasEmptyRequired && "날짜와 기술명을 입력하면 저장할 수 있어요"}
+        </p>
       </div>
     </form>
   );
