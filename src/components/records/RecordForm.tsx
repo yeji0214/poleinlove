@@ -1,10 +1,7 @@
 "use client";
 
 import { useActionState, useRef, useState } from "react";
-import {
-  createRecord,
-  type CreateRecordState,
-} from "@/app/records/new/actions";
+import { type CreateRecordState } from "@/app/records/new/actions";
 import { PRESET_TAGS } from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
 import {
@@ -15,15 +12,35 @@ import {
 } from "@/components/ui/icons";
 import { NoteCard } from "@/components/ui/NoteCard";
 
-const initialState: CreateRecordState = null;
+type RecordFormProps = {
+  action: (
+    prevState: CreateRecordState,
+    formData: FormData,
+  ) => Promise<CreateRecordState>;
+  submitLabel: string;
+  defaultValues?: {
+    skillName: string;
+    performedAt: string;
+    tags: string[];
+    difficultyNote: string;
+    didWellNote: string;
+    improvementNote: string;
+    images: { url: string }[];
+  };
+};
 
-export default function RecordForm() {
-  const [state, formAction, pending] = useActionState(
-    createRecord,
-    initialState,
+export default function RecordForm({
+  action,
+  submitLabel,
+  defaultValues,
+}: RecordFormProps) {
+  const [state, formAction, pending] = useActionState(action, null);
+  const [selectedTags, setSelectedTags] = useState<string[]>(
+    defaultValues?.tags ?? [],
   );
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [imageUrls, setImageUrls] = useState<string[]>(
+    defaultValues?.images.map((i) => i.url) ?? [],
+  );
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -83,6 +100,7 @@ export default function RecordForm() {
               name="performedAt"
               type="date"
               required
+              defaultValue={defaultValues?.performedAt}
               className="rounded-xl border border-zinc-200 px-3 py-2.5 text-sm text-zinc-700 outline-none placeholder:text-zinc-400 focus:border-zinc-400"
             />
           </div>
@@ -98,6 +116,7 @@ export default function RecordForm() {
               name="skillName"
               type="text"
               required
+              defaultValue={defaultValues?.skillName}
               placeholder="예) 발레리나, 버터플라이"
               className="rounded-xl border border-zinc-200 px-3 py-2.5 text-sm text-zinc-700 outline-none placeholder:text-zinc-400 focus:border-zinc-400"
             />
@@ -187,6 +206,7 @@ export default function RecordForm() {
         <textarea
           name="difficultyNote"
           rows={3}
+          defaultValue={defaultValues?.difficultyNote}
           placeholder="어떤 게 힘들었나요?"
           className="w-full resize-none border-b border-zinc-200 py-2 text-sm text-zinc-700 outline-none placeholder:text-zinc-400"
         />
@@ -200,6 +220,7 @@ export default function RecordForm() {
         <textarea
           name="didWellNote"
           rows={3}
+          defaultValue={defaultValues?.didWellNote}
           placeholder="무엇을 잘 했나요?"
           className="w-full resize-none border-b border-zinc-200 py-2 text-sm text-zinc-700 outline-none placeholder:text-zinc-400"
         />
@@ -213,6 +234,7 @@ export default function RecordForm() {
         <textarea
           name="improvementNote"
           rows={3}
+          defaultValue={defaultValues?.improvementNote}
           placeholder="다음에 신경써볼 것은?"
           className="w-full resize-none border-b border-zinc-200 py-2 text-sm text-zinc-700 outline-none placeholder:text-zinc-400"
         />
@@ -223,7 +245,7 @@ export default function RecordForm() {
         disabled={pending || uploading}
         className="w-full rounded-2xl bg-rose-300 py-4 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
       >
-        {pending ? "저장 중..." : "기록 저장"}
+        {pending ? "저장 중..." : submitLabel}
       </button>
     </form>
   );

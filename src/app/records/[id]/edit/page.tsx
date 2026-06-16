@@ -1,0 +1,56 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+import RecordForm from "@/components/records/RecordForm";
+import { ArrowLeftIcon } from "@/components/ui/icons";
+import { updateRecord } from "./actions";
+
+export default async function EditRecordPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const record = await prisma.record.findUnique({
+    where: { id: Number(id) },
+    include: { images: { orderBy: { order: "asc" } } },
+  });
+
+  if (!record) notFound();
+
+  const boundUpdateRecord = updateRecord.bind(null, record.id);
+
+  return (
+    <div className="min-h-screen bg-stone-50">
+      <header className="mx-auto w-full max-w-xl px-5 pb-4 pt-8">
+        <div className="flex items-center gap-4">
+          <Link
+            href={`/records/${record.id}`}
+            className="rounded-xl p-2 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800"
+          >
+            <ArrowLeftIcon />
+          </Link>
+          <div>
+            <h1 className="text-xl font-bold text-zinc-900">기록 수정</h1>
+            <p className="text-sm text-zinc-600">내용을 수정해보세요</p>
+          </div>
+        </div>
+      </header>
+      <main className="mx-auto w-full max-w-xl px-4 pb-12">
+        <RecordForm
+          action={boundUpdateRecord}
+          submitLabel="수정 완료"
+          defaultValues={{
+            skillName: record.skillName,
+            performedAt: record.performedAt.toISOString().slice(0, 10),
+            tags: record.tags,
+            difficultyNote: record.difficultyNote ?? "",
+            didWellNote: record.didWellNote ?? "",
+            improvementNote: record.improvementNote ?? "",
+            images: record.images.map((img) => ({ url: img.url })),
+          }}
+        />
+      </main>
+    </div>
+  );
+}

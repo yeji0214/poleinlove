@@ -1,6 +1,7 @@
 import Link from "next/link";
 import RecordForm from "@/components/records/RecordForm";
 import { ArrowLeftIcon } from "@/components/ui/icons";
+import { createRecord } from "./actions";
 
 export default function NewRecordPage() {
   return (
@@ -17,7 +18,7 @@ export default function NewRecordPage() {
         </div>
       </header>
       <main className="mx-auto w-full max-w-xl px-4 pb-12">
-        <RecordForm />
+        <RecordForm action={createRecord} submitLabel="기록 저장" />
       </main>
     </div>
   );
