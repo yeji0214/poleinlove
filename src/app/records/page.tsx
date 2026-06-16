@@ -1,18 +1,34 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { TAG_COLORS } from "@/lib/constants";
-import { SearchIcon, CalendarIcon, ImagePlaceholderIcon } from "@/components/ui/icons";
+import { CalendarIcon, ImagePlaceholderIcon } from "@/components/ui/icons";
 import { TagFilter } from "@/components/records/TagFilter";
+import { SearchBar } from "@/components/records/SearchBar";
 
 export default async function RecordsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tag?: string }>;
+  searchParams: Promise<{ tag?: string; q?: string }>;
 }) {
-  const { tag } = await searchParams;
+  const { tag, q } = await searchParams;
 
   const records = await prisma.record.findMany({
-    where: tag ? { tags: { has: tag } } : undefined,
+    where: {
+      AND: [
+        tag ? { tags: { has: tag } } : {},
+        q
+          ? {
+              OR: [
+                { skillName: { contains: q, mode: "insensitive" } },
+                { sessionNote: { contains: q, mode: "insensitive" } },
+                { difficultyNote: { contains: q, mode: "insensitive" } },
+                { didWellNote: { contains: q, mode: "insensitive" } },
+                { improvementNote: { contains: q, mode: "insensitive" } },
+              ],
+            }
+          : {},
+      ],
+    },
     orderBy: { performedAt: "desc" },
     include: { images: { orderBy: { order: "asc" }, take: 1 } },
   });
@@ -36,26 +52,21 @@ export default async function RecordsPage({
 
       <main className="mx-auto w-full max-w-2xl px-4 pb-12">
         {/* 검색 */}
-        <div className="mb-4 flex items-center gap-2 rounded-2xl bg-white px-4 py-3 shadow-sm">
-          <SearchIcon className="shrink-0 text-zinc-400" />
-          <input
-            type="text"
-            placeholder="기술명, 메모 검색..."
-            className="w-full bg-transparent text-sm text-zinc-700 outline-none placeholder:text-zinc-400"
-            disabled
-          />
-        </div>
+        <SearchBar defaultValue={q} tag={tag} />
 
         {/* 태그 필터 */}
-        <TagFilter activeTag={tag} />
+        <TagFilter activeTag={tag} query={q} />
 
         {/* 기록 목록 */}
         {records.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-24 text-center">
-            {tag ? (
+            {tag || q ? (
               <>
                 <p className="text-zinc-500">
-                  <span className="font-medium text-zinc-700">#{tag}</span> 태그의 기록이 없어요
+                  {tag && <span className="font-medium text-zinc-700">#{tag}</span>}
+                  {tag && q && " · "}
+                  {q && <span className="font-medium text-zinc-700">&ldquo;{q}&rdquo;</span>}
+                  {" "}에 맞는 기록이 없어요
                 </p>
                 <Link
                   href="/records"

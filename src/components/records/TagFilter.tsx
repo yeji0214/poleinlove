@@ -3,17 +3,17 @@
 import { useRouter } from "next/navigation";
 import { PRESET_TAGS } from "@/lib/constants";
 
-type Props = { activeTag?: string };
+type Props = { activeTag?: string; query?: string };
 
-export function TagFilter({ activeTag }: Props) {
+export function TagFilter({ activeTag, query }: Props) {
   const router = useRouter();
 
   function handleClick(tag: string) {
-    if (activeTag === tag) {
-      router.push("/records");
-    } else {
-      router.push(`/records?tag=${encodeURIComponent(tag)}`);
-    }
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    if (activeTag !== tag) params.set("tag", tag);
+    const qs = params.toString();
+    router.replace(qs ? `/records?${qs}` : "/records");
   }
 
   return (
