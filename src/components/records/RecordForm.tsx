@@ -12,6 +12,7 @@ import {
   ArrowUpCircleIcon,
 } from "@/components/ui/icons";
 import { NoteCard } from "@/components/ui/NoteCard";
+import { DatePicker } from "@/components/ui/DatePicker";
 
 type RecordFormProps = {
   action: (
@@ -57,19 +58,10 @@ export default function RecordForm({
     setSkillName(value);
   }
 
-  function handlePerformedAtChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = e.target.value;
-    if (performedAt !== "" && value === "") setPerformedAtTouched(true);
-    setPerformedAt(value);
-  }
-
-  const isFutureDate =
-    performedAt !== "" && performedAt > getTodayDateString();
-  const performedAtError =
-    (performedAtTouched && performedAt === "") || isFutureDate;
+  const performedAtError = performedAtTouched && performedAt === "";
   const skillNameError = skillNameTouched && skillName.trim() === "";
   const hasEmptyRequired = skillName.trim() === "" || performedAt === "";
-  const isValid = !hasEmptyRequired && !isFutureDate;
+  const isValid = !hasEmptyRequired;
 
   function toggleTag(tag: string) {
     setSelectedTags((prev) =>
@@ -127,27 +119,17 @@ export default function RecordForm({
             >
               날짜 <span className="text-rose-400">*</span>
             </label>
-            <input
+            <DatePicker
               id="performedAt"
-              name="performedAt"
-              type="date"
-              required
-              max={getTodayDateString()}
               value={performedAt}
-              onChange={handlePerformedAtChange}
+              onChange={setPerformedAt}
               onBlur={() => setPerformedAtTouched(true)}
-              aria-invalid={performedAtError}
-              className={`rounded-xl border px-3 py-2.5 text-sm text-zinc-700 outline-none placeholder:text-zinc-400 ${
-                performedAtError
-                  ? "border-red-300 focus:border-red-400"
-                  : "border-zinc-200 focus:border-zinc-400"
-              }`}
+              max={getTodayDateString()}
+              invalid={performedAtError}
             />
+            <input type="hidden" name="performedAt" value={performedAt} />
             <p className="h-4 truncate text-xs text-red-500">
-              {performedAtError &&
-                (isFutureDate
-                  ? "오늘 이전 날짜만 선택할 수 있어요"
-                  : "날짜를 선택해주세요")}
+              {performedAtError && "날짜를 선택해주세요"}
             </p>
           </div>
           <div className="flex flex-col gap-1">
