@@ -70,3 +70,23 @@ ON storage.objects
 FOR INSERT TO anon
 WITH CHECK (bucket_id = 'record-images');
 ```
+
+## 9. 비밀번호 게이트 도입
+
+개인 운동 기록과 사진이 배포 URL만 알면 누구나 볼 수 있는 상태였다. 회원가입/역할 같은 복잡한 인증은 MVP 범위에서 제외했지만(`requirements.md` 4번), 단일 사용자가 쓰는 개인 앱이므로 공유 비밀번호 하나로 접근을 막는 가벼운 방식이면 충분하다고 판단했다.
+
+### 세션 방식: DB 세션 테이블 없이 서명된 쿠키
+
+사용자/세션 테이블을 추가하지 않고, 비밀번호가 맞으면 만료 시각을 담은 값을 서버가 Node 기본 `crypto` 모듈(`createHmac`)로 서명해 `httpOnly` 쿠키에 저장한다. 요청마다 서명을 다시 계산해 비교하고 만료 시각을 확인하는 방식으로 검증한다. 역할/사용자 구분이 없는 단일 비밀번호 구조라 `jose` 같은 JWT 라이브러리를 추가하지 않고 표준 모듈만으로 충분하다고 판단했다.
+
+세션 유지 기간은 30일로 설정했다. 개인 기기에서 자주 쓰는 앱이라 자주 로그아웃되는 것이 번거롭다고 판단했다.
+
+### Next.js 16의 Middleware → Proxy 이름 변경
+
+이 프로젝트가 쓰는 Next.js 버전(16.2.4)부터 기존 `middleware.ts` 컨벤션이 `proxy.ts`로 이름이 바뀌었다(`node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/proxy.md`). 동작은 동일하지만 파일명과 export 이름(`proxy`)이 다르므로 `src/proxy.ts`로 작성했다. 이 버전의 Proxy는 Edge가 아닌 Node.js 런타임에서 실행되어 `crypto` 같은 Node 내장 모듈을 그대로 쓸 수 있다.
+
+`src/proxy.ts`는 `/login`과 정적 자산을 제외한 모든 경로에서 세션 쿠키를 검증하고, 없거나 만료됐으면 `/login?from=<원래 경로>`로 리다이렉트한다. Server Action은 별도 라우트가 아니라 현재 페이지로의 POST로 처리되므로, 페이지 라우트가 막히면 그 페이지에서 호출되는 Server Action도 함께 보호된다.
+
+### 로그아웃
+
+기록 목록 페이지 헤더에 로그아웃 버튼을 추가했다. 클릭하면 세션 쿠키를 삭제하고 `/login`으로 이동한다.

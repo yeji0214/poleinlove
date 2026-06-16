@@ -1,9 +1,14 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { TAG_COLORS } from "@/lib/constants";
-import { CalendarIcon, ImagePlaceholderIcon } from "@/components/ui/icons";
+import {
+  CalendarIcon,
+  ImagePlaceholderIcon,
+  LogoutIcon,
+} from "@/components/ui/icons";
 import { TagFilter } from "@/components/records/TagFilter";
 import { SearchBar } from "@/components/records/SearchBar";
+import { logout } from "@/app/login/actions";
 
 export default async function RecordsPage({
   searchParams,
@@ -41,12 +46,23 @@ export default async function RecordsPage({
             <h1 className="text-2xl font-bold text-zinc-900">Poleinlove</h1>
             <p className="text-sm text-zinc-500">폴댄스 기록장</p>
           </div>
-          <Link
-            href="/records/new"
-            className="rounded-2xl bg-rose-300 px-5 py-2.5 text-sm font-medium text-white hover:opacity-90 transition-opacity"
-          >
-            + &nbsp;새 기록
-          </Link>
+          <div className="flex items-center gap-2">
+            <form action={logout}>
+              <button
+                type="submit"
+                className="cursor-pointer rounded-xl p-2 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800"
+                aria-label="로그아웃"
+              >
+                <LogoutIcon />
+              </button>
+            </form>
+            <Link
+              href="/records/new"
+              className="rounded-2xl bg-rose-300 px-5 py-2.5 text-sm font-medium text-white hover:opacity-90 transition-opacity"
+            >
+              + &nbsp;새 기록
+            </Link>
+          </div>
         </div>
       </header>
 
