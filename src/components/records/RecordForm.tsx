@@ -43,6 +43,11 @@ export default function RecordForm({
   );
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [skillName, setSkillName] = useState(defaultValues?.skillName ?? "");
+  const [performedAt, setPerformedAt] = useState(
+    defaultValues?.performedAt ?? "",
+  );
+  const isValid = skillName.trim() !== "" && performedAt !== "";
 
   function toggleTag(tag: string) {
     setSelectedTags((prev) =>
@@ -79,9 +84,14 @@ export default function RecordForm({
   return (
     <form action={formAction} className="flex flex-col gap-4">
       {state?.error && (
-        <p className="text-sm text-red-500" aria-live="polite">
+        <div
+          role="alert"
+          aria-live="polite"
+          className="flex items-center gap-2 rounded-2xl bg-red-50 px-4 py-3 text-sm font-medium text-red-500"
+        >
+          <ExclamationIcon className="shrink-0 text-red-400" />
           {state.error}
-        </p>
+        </div>
       )}
 
       {/* 기본 정보 */}
@@ -93,14 +103,15 @@ export default function RecordForm({
               htmlFor="performedAt"
               className="text-sm font-medium text-zinc-700"
             >
-              날짜
+              날짜 <span className="text-rose-400">*</span>
             </label>
             <input
               id="performedAt"
               name="performedAt"
               type="date"
               required
-              defaultValue={defaultValues?.performedAt}
+              value={performedAt}
+              onChange={(e) => setPerformedAt(e.target.value)}
               className="rounded-xl border border-zinc-200 px-3 py-2.5 text-sm text-zinc-700 outline-none placeholder:text-zinc-400 focus:border-zinc-400"
             />
           </div>
@@ -109,14 +120,15 @@ export default function RecordForm({
               htmlFor="skillName"
               className="text-sm font-medium text-zinc-700"
             >
-              기술명
+              기술명 <span className="text-rose-400">*</span>
             </label>
             <input
               id="skillName"
               name="skillName"
               type="text"
               required
-              defaultValue={defaultValues?.skillName}
+              value={skillName}
+              onChange={(e) => setSkillName(e.target.value)}
               placeholder="예) 발레리나, 버터플라이"
               className="rounded-xl border border-zinc-200 px-3 py-2.5 text-sm text-zinc-700 outline-none placeholder:text-zinc-400 focus:border-zinc-400"
             />
@@ -240,13 +252,20 @@ export default function RecordForm({
         />
       </NoteCard>
 
-      <button
-        type="submit"
-        disabled={pending || uploading}
-        className="w-full cursor-pointer rounded-2xl bg-rose-300 py-4 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        {pending ? "저장 중..." : submitLabel}
-      </button>
+      <div className="flex flex-col gap-2">
+        <button
+          type="submit"
+          disabled={pending || uploading || !isValid}
+          className="w-full cursor-pointer rounded-2xl bg-rose-300 py-4 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {pending ? "저장 중..." : submitLabel}
+        </button>
+        {!isValid && (
+          <p className="text-center text-xs text-zinc-400">
+            날짜와 기술명을 입력하면 저장할 수 있어요
+          </p>
+        )}
+      </div>
     </form>
   );
 }
