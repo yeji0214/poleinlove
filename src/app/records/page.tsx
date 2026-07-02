@@ -57,6 +57,12 @@ export default async function RecordsPage({
               </button>
             </form>
             <Link
+              href="/records/instagram"
+              className="rounded-2xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-600 hover:bg-zinc-50 transition-colors"
+            >
+              인스타 가져오기
+            </Link>
+            <Link
               href="/records/new"
               className="rounded-2xl bg-rose-300 px-5 py-2.5 text-sm font-medium text-white hover:opacity-90 transition-opacity"
             >
