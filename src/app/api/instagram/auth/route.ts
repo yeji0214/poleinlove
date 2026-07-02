@@ -8,5 +8,5 @@ export async function GET(request: NextRequest) {
     scope: 'instagram_business_basic',
     response_type: 'code',
   })
-  return NextResponse.redirect(`https://api.instagram.com/oauth/authorize?${params}`)
+  return NextResponse.redirect(`https://www.instagram.com/oauth/authorize?${params}`)
 }
