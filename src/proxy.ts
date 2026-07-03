@@ -15,5 +15,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!login|api/instagram/callback|_next/static|_next/image|.*\\.(?:ico|png|svg|jpg|jpeg|webp)$).*)'],
+  matcher: ['/((?!login|api/instagram/callback|api/instagram/init|_next/static|_next/image|.*\\.(?:ico|png|svg|jpg|jpeg|webp)$).*)'],
 }
