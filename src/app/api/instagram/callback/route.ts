@@ -12,34 +12,43 @@ export async function GET(request: NextRequest) {
 
   const redirectUri = `${origin}/api/instagram/callback`
 
-  // Facebook 단기 토큰 발급
-  const tokenRes = await fetch(
-    `https://graph.facebook.com/oauth/access_token?client_id=${process.env.FACEBOOK_APP_ID}&client_secret=${process.env.FACEBOOK_APP_SECRET}&redirect_uri=${encodeURIComponent(redirectUri)}&code=${code}`,
-  )
-  const tokenData = await tokenRes.json()
+  // 단기 토큰 발급
+  const tokenRes = await fetch('https://api.instagram.com/oauth/access_token', {
+    method: 'POST',
+    body: new URLSearchParams({
+      client_id: process.env.INSTAGRAM_APP_ID!,
+      client_secret: process.env.INSTAGRAM_APP_SECRET!,
+      grant_type: 'authorization_code',
+      redirect_uri: redirectUri,
+      code,
+    }),
+  })
 
-  if (tokenData.error || !tokenData.access_token) {
-    console.error('Token exchange failed:', tokenData)
+  const shortLived = await tokenRes.json()
+
+  if (shortLived.error_type || !shortLived.access_token) {
+    console.error('Token exchange failed:', shortLived)
     return NextResponse.redirect(`${origin}/records/instagram?error=token_failed`)
   }
 
-  // Facebook 장기 토큰으로 교환 (60일)
+  // 장기 토큰으로 교환 (60일)
   const longLivedRes = await fetch(
-    `https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=${process.env.FACEBOOK_APP_ID}&client_secret=${process.env.FACEBOOK_APP_SECRET}&fb_exchange_token=${tokenData.access_token}`,
+    `https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=${process.env.INSTAGRAM_APP_SECRET}&access_token=${shortLived.access_token}`,
   )
-  const longLivedData = await longLivedRes.json()
 
-  if (!longLivedData.access_token) {
-    console.error('Long-lived token exchange failed:', longLivedData)
+  const longLived = await longLivedRes.json()
+
+  if (!longLived.access_token) {
+    console.error('Long-lived token exchange failed:', longLived)
     return NextResponse.redirect(`${origin}/records/instagram?error=token_exchange_failed`)
   }
 
-  const expiresAt = new Date(Date.now() + (longLivedData.expires_in ?? 5184000) * 1000)
+  const expiresAt = new Date(Date.now() + longLived.expires_in * 1000)
 
   await prisma.instagramToken.upsert({
     where: { id: 1 },
-    update: { accessToken: longLivedData.access_token, expiresAt },
-    create: { id: 1, accessToken: longLivedData.access_token, expiresAt },
+    update: { accessToken: longLived.access_token, expiresAt },
+    create: { id: 1, accessToken: longLived.access_token, expiresAt },
   })
 
   return NextResponse.redirect(`${origin}/records/instagram`)
