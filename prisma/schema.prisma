@@ -24,6 +24,7 @@ model Record {
   didWellNote      String?
   improvementNote  String?
   instagramMediaId String?  @unique
+  instagramUrl     String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 

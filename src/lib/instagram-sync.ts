@@ -6,6 +6,7 @@ interface InstagramMedia {
   media_type: string
   thumbnail_url?: string
   timestamp: string
+  permalink?: string
 }
 
 function extractSkillFromCaption(caption: string | null | undefined): string {
@@ -19,7 +20,7 @@ async function fetchAllReels(
   accessToken: string,
 ): Promise<{ reels?: InstagramMedia[]; error?: string }> {
   const reels: InstagramMedia[] = []
-  let url: string | null = `https://graph.instagram.com/me/media?fields=id,caption,media_type,thumbnail_url,timestamp&limit=100&access_token=${accessToken}`
+  let url: string | null = `https://graph.instagram.com/me/media?fields=id,caption,media_type,thumbnail_url,timestamp,permalink&limit=100&access_token=${accessToken}`
 
   while (url) {
     const res: Response = await fetch(url, { cache: 'no-store' })
@@ -40,18 +41,26 @@ export async function syncInstagramReels(
   const { reels, error } = await fetchAllReels(accessToken)
   if (error || !reels) return { added: 0, total: 0, error }
 
-  const existingIds = new Set(
-    (
-      await prisma.record.findMany({
-        where: { instagramMediaId: { not: null } },
-        select: { instagramMediaId: true },
-      })
-    ).map((r) => r.instagramMediaId as string),
-  )
+  const existingRecords = await prisma.record.findMany({
+    where: { instagramMediaId: { not: null } },
+    select: { instagramMediaId: true, instagramUrl: true },
+  })
+  const existingMap = new Map(existingRecords.map((r) => [r.instagramMediaId as string, r]))
 
   let added = 0
   for (const reel of reels) {
-    if (existingIds.has(reel.id)) continue
+    const existing = existingMap.get(reel.id)
+
+    if (existing) {
+      // 링크가 없으면 업데이트
+      if (!existing.instagramUrl && reel.permalink) {
+        await prisma.record.update({
+          where: { instagramMediaId: reel.id },
+          data: { instagramUrl: reel.permalink },
+        })
+      }
+      continue
+    }
 
     const skillName = extractSkillFromCaption(reel.caption) || '미분류'
     const record = await prisma.record.create({
@@ -60,6 +69,7 @@ export async function syncInstagramReels(
         performedAt: new Date(reel.timestamp),
         sessionNote: reel.caption ?? null,
         instagramMediaId: reel.id,
+        instagramUrl: reel.permalink ?? null,
         tags: [],
       },
     })

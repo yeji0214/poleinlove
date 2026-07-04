@@ -91,13 +91,27 @@ export default async function RecordDetailPage({
           <ImageCarousel images={record.images} altFallback={record.skillName} />
         )}
 
-        {/* 세션 메모 */}
-        {record.sessionNote && (
+        {/* 인스타그램 캡션 + 링크 */}
+        {(record.sessionNote || record.instagramUrl) && (
           <section className="rounded-2xl bg-white p-5 shadow-sm">
-            <h2 className="mb-3 font-bold text-zinc-900">인스타그램 캡션</h2>
-            <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-600">
-              {record.sessionNote}
-            </p>
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="font-bold text-zinc-900">인스타그램 캡션</h2>
+              {record.instagramUrl && (
+                <a
+                  href={record.instagramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 rounded-xl bg-zinc-50 px-3 py-1.5 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-700"
+                >
+                  릴스 보러가기 →
+                </a>
+              )}
+            </div>
+            {record.sessionNote && (
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-600">
+                {record.sessionNote}
+              </p>
+            )}
           </section>
         )}
 
