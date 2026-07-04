@@ -5,10 +5,9 @@ import { prisma } from '@/lib/prisma'
 
 function extractSkillFromCaption(caption: string | null): string {
   if (!caption) return ''
-  const match = caption.match(/#pd([a-zA-Z가-힣]+)/i)
-  if (!match) return ''
-  const skill = match[1]
-  return skill.charAt(0).toUpperCase() + skill.slice(1)
+  const matches = [...caption.matchAll(/#pd([a-zA-Z가-힣]+)/gi)]
+  if (matches.length === 0) return ''
+  return matches.map(m => m[1].charAt(0).toUpperCase() + m[1].slice(1)).join(' · ')
 }
 
 export async function importReel(formData: FormData) {
