@@ -94,7 +94,7 @@ export default async function RecordDetailPage({
         {/* 세션 메모 */}
         {record.sessionNote && (
           <section className="rounded-2xl bg-white p-5 shadow-sm">
-            <h2 className="mb-3 font-bold text-zinc-900">세션 메모</h2>
+            <h2 className="mb-3 font-bold text-zinc-900">인스타그램 캡션</h2>
             <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-600">
               {record.sessionNote}
             </p>

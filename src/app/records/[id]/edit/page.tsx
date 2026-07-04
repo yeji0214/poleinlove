@@ -37,6 +37,14 @@ export default async function EditRecordPage({
         </div>
       </header>
       <main className="mx-auto w-full max-w-xl px-4 pb-12">
+        {record.sessionNote && (
+          <div className="mb-4 rounded-2xl bg-white p-5 shadow-sm">
+            <p className="mb-2 text-xs font-medium text-zinc-400">인스타그램 캡션</p>
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-600">
+              {record.sessionNote}
+            </p>
+          </div>
+        )}
         <RecordForm
           action={boundUpdateRecord}
           submitLabel="수정 완료"
