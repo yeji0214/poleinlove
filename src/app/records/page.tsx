@@ -9,6 +9,7 @@ import {
 import { TagFilter } from "@/components/records/TagFilter";
 import { SearchBar } from "@/components/records/SearchBar";
 import { logout } from "@/app/login/actions";
+import { SyncButton } from "@/components/records/SyncButton";
 
 export default async function RecordsPage({
   searchParams,
@@ -16,6 +17,7 @@ export default async function RecordsPage({
   searchParams: Promise<{ tag?: string; q?: string }>;
 }) {
   const { tag, q } = await searchParams;
+  const instagramToken = await prisma.instagramToken.findFirst({ select: { id: true } });
 
   const records = await prisma.record.findMany({
     where: {
@@ -56,12 +58,7 @@ export default async function RecordsPage({
                 <LogoutIcon />
               </button>
             </form>
-            <Link
-              href="/records/instagram"
-              className="rounded-2xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-600 hover:bg-zinc-50 transition-colors"
-            >
-              인스타 가져오기
-            </Link>
+            <SyncButton hasToken={!!instagramToken} />
             <Link
               href="/records/new"
               className="rounded-2xl bg-rose-300 px-5 py-2.5 text-sm font-medium text-white hover:opacity-90 transition-opacity"

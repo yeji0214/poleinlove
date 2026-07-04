@@ -15,16 +15,17 @@ datasource db {
 }
 
 model Record {
-  id              Int      @id @default(autoincrement())
-  performedAt     DateTime
-  skillName       String
-  tags            String[]
-  sessionNote     String?
-  difficultyNote  String?
-  didWellNote     String?
-  improvementNote String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id               Int      @id @default(autoincrement())
+  performedAt      DateTime
+  skillName        String
+  tags             String[]
+  sessionNote      String?
+  difficultyNote   String?
+  didWellNote      String?
+  improvementNote  String?
+  instagramMediaId String?  @unique
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   images Image[]
 }

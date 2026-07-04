@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { syncInstagramReels } from '@/lib/instagram-sync'
+
+export const maxDuration = 60
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const token = searchParams.get('token')
   const secret = searchParams.get('secret')
+  const reset = searchParams.get('reset') === 'true'
 
   if (!secret || secret !== process.env.INIT_SECRET) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -26,7 +30,6 @@ export async function GET(request: NextRequest) {
     accessToken = data.access_token
     expiresAt = new Date(Date.now() + data.expires_in * 1000)
   } else {
-    // Already long-lived token — use 60-day default
     expiresAt = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000)
   }
 
@@ -35,6 +38,12 @@ export async function GET(request: NextRequest) {
     update: { accessToken, expiresAt },
     create: { id: 1, accessToken, expiresAt },
   })
+
+  if (reset) {
+    await prisma.record.deleteMany({})
+    const syncResult = await syncInstagramReels(accessToken)
+    return NextResponse.json({ success: true, expiresAt, sync: syncResult })
+  }
 
   return NextResponse.json({ success: true, expiresAt })
 }
