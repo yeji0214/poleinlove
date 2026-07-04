@@ -22,7 +22,7 @@ async function fetchAllReels(
   let url: string | null = `https://graph.instagram.com/me/media?fields=id,caption,media_type,thumbnail_url,timestamp&limit=100&access_token=${accessToken}`
 
   while (url) {
-    const res = await fetch(url, { cache: 'no-store' })
+    const res: Response = await fetch(url, { cache: 'no-store' })
     const data = await res.json()
     if (data.error) return { error: data.error.message }
 
