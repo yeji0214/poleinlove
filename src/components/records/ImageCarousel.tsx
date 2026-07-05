@@ -23,7 +23,7 @@ export function ImageCarousel({ images, altFallback }: Props) {
 
   return (
     <div
-      className="relative aspect-square w-full overflow-hidden rounded-2xl"
+      className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
