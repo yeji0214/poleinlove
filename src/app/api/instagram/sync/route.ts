@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     await prisma.record.deleteMany({})
   }
 
-  const result = await syncInstagramReels(token.accessToken)
+  const result = await syncInstagramReels(token.accessToken, body?.reset === true)
   if (result.error) return NextResponse.json({ error: result.error }, { status: 400 })
 
   return NextResponse.json({ added: result.added, total: result.total })

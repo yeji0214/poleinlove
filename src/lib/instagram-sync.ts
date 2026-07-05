@@ -61,27 +61,28 @@ async function batchAssignTags(
         messages: [
           {
             role: 'user',
-            content: `다음 폴댄스 기록들의 난이도를 판단해줘. 입문/초급/중급/고급 중 해당하는 것을 JSON으로만 반환해.
+            content: `다음 폴댄스 기록들의 난이도를 판단해줘. 입문/초급/중급/고급 중 명확히 해당하는 것만 JSON으로 반환해.
 
 난이도 기준:
-- 입문: 폴댄스 처음 배우는 기초 동작
+- 입문: 폴댄스를 처음 배우는 단계의 기초 동작
 - 초급: 기본기를 익힌 후 배우는 동작
 - 중급: 어느 정도 힘과 유연성이 필요한 동작
-- 고급: 높은 수준의 힘, 유연성, 기술이 필요한 동작
+- 고급: 높은 수준의 힘, 유연성, 기술이 복합적으로 필요한 동작
 
-한 기록에 여러 난이도가 있을 수 있어. 판단이 어려우면 빈 배열.
+중요: 캡션만으로 난이도를 확신할 수 없거나, 기술명만으로 판단이 어려우면 반드시 빈 배열 []을 반환해. 억지로 태그를 붙이지 마.
 
 기록: ${JSON.stringify(input)}
 
-응답 형식 (다른 말 없이 JSON만): {"id1": ["초급"], "id2": ["초급","중급"]}`,
+응답 형식 (다른 말 없이 JSON만): {"id1": ["초급"], "id2": [], "id3": ["중급","고급"]}`,
           },
         ],
       })
 
-      const text = message.content[0].type === 'text' ? message.content[0].text.trim() : '{}'
+      const raw = message.content[0].type === 'text' ? message.content[0].text.trim() : '{}'
+      const text = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
       const parsed: Record<string, string[]> = JSON.parse(text)
       for (const [id, tags] of Object.entries(parsed)) {
-        const valid = tags.filter((t) => (DIFFICULTY_TAGS as readonly string[]).includes(t))
+        const valid = [...new Set(tags.filter((t) => (DIFFICULTY_TAGS as readonly string[]).includes(t)))]
         result.set(id, valid)
       }
     } catch {
@@ -94,6 +95,7 @@ async function batchAssignTags(
 
 export async function syncInstagramReels(
   accessToken: string,
+  skipAiTags = false,
 ): Promise<{ added: number; total: number; error?: string }> {
   const { reels, error } = await fetchAllReels(accessToken)
   if (error || !reels) return { added: 0, total: 0, error }
@@ -120,13 +122,16 @@ export async function syncInstagramReels(
 
   if (newReels.length === 0) return { added: 0, total: reels.length }
 
-  // 새 릴스 AI 태그 일괄 생성
-  const tagItems = newReels.map((r) => ({
-    id: r.id,
-    skillName: extractSkillFromCaption(r.caption) || '미분류',
-    caption: r.caption ?? null,
-  }))
-  const tagMap = await batchAssignTags(tagItems)
+  // 새 릴스 AI 태그 일괄 생성 (reset 시엔 스킵 - 별도 배치 태그로 처리)
+  const tagMap = skipAiTags
+    ? new Map<string, string[]>()
+    : await batchAssignTags(
+        newReels.map((r) => ({
+          id: r.id,
+          skillName: extractSkillFromCaption(r.caption) || '미분류',
+          caption: r.caption ?? null,
+        })),
+      )
 
   // 새 기록 저장
   let added = 0

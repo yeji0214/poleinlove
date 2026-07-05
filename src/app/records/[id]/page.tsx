@@ -70,9 +70,9 @@ export default async function RecordDetailPage({
 
       <main className="mx-auto flex w-full max-w-xl flex-col gap-4 px-4 pb-12">
         {/* 태그 */}
-        {record.tags.length > 0 && (
+        {record.tags.filter((t) => t !== '미분류').length > 0 && (
           <div className="flex flex-wrap gap-2">
-            {record.tags.map((tag) => (
+            {[...new Set(record.tags.filter((t) => t !== '미분류'))].map((tag) => (
               <span
                 key={tag}
                 className={`rounded-full px-3 py-1 text-sm font-medium ${TAG_COLORS[tag] ?? "bg-stone-100 text-zinc-600"}`}

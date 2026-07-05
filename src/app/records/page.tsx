@@ -146,9 +146,9 @@ export default async function RecordsPage({
                         {record.sessionNote}
                       </p>
                     )}
-                    {record.tags.length > 0 && (
+                    {record.tags.filter((t) => t !== '미분류').length > 0 && (
                       <div className="mt-1 flex flex-wrap gap-1">
-                        {record.tags.map((t) => (
+                        {[...new Set(record.tags.filter((t) => t !== '미분류'))].map((t) => (
                           <span
                             key={t}
                             className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${TAG_COLORS[t] ?? "bg-stone-100 text-zinc-600"}`}
