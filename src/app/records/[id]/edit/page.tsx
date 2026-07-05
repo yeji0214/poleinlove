@@ -48,6 +48,7 @@ export default async function EditRecordPage({
         <RecordForm
           action={boundUpdateRecord}
           submitLabel="수정 완료"
+          recordId={record.id}
           defaultValues={{
             skillName: record.skillName,
             performedAt: record.performedAt.toISOString().slice(0, 10),

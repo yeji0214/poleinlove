@@ -20,6 +20,7 @@ type RecordFormProps = {
     formData: FormData,
   ) => Promise<CreateRecordState>;
   submitLabel: string;
+  recordId?: number;
   defaultValues?: {
     skillName: string;
     performedAt: string;
@@ -34,6 +35,7 @@ type RecordFormProps = {
 export default function RecordForm({
   action,
   submitLabel,
+  recordId,
   defaultValues,
 }: RecordFormProps) {
   const [state, formAction, pending] = useActionState(action, null);
@@ -51,6 +53,7 @@ export default function RecordForm({
   );
   const [skillNameTouched, setSkillNameTouched] = useState(false);
   const [performedAtTouched, setPerformedAtTouched] = useState(false);
+  const [tagSuggesting, setTagSuggesting] = useState(false);
 
   function handleSkillNameChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value;
@@ -62,6 +65,18 @@ export default function RecordForm({
   const skillNameError = skillNameTouched && skillName.trim() === "";
   const hasEmptyRequired = skillName.trim() === "" || performedAt === "";
   const isValid = !hasEmptyRequired;
+
+  async function suggestTags() {
+    if (!recordId) return
+    setTagSuggesting(true)
+    try {
+      const res = await fetch(`/api/records/${recordId}/suggest-tags`, { method: 'POST' })
+      const data = await res.json()
+      if (data.tags?.length) setSelectedTags(data.tags)
+    } finally {
+      setTagSuggesting(false)
+    }
+  }
 
   function toggleTag(tag: string) {
     setSelectedTags((prev) =>
@@ -161,7 +176,19 @@ export default function RecordForm({
           </div>
         </div>
         <div>
-          <p className="mb-2 text-sm font-medium text-zinc-700">태그</p>
+          <div className="mb-2 flex items-center justify-between">
+            <p className="text-sm font-medium text-zinc-700">난이도 태그</p>
+            {recordId && (
+              <button
+                type="button"
+                onClick={suggestTags}
+                disabled={tagSuggesting}
+                className="flex items-center gap-1 text-xs text-violet-400 hover:text-violet-600 disabled:opacity-50"
+              >
+                {tagSuggesting ? '추천 중…' : '✦ AI 추천'}
+              </button>
+            )}
+          </div>
           <div className="flex flex-wrap gap-2">
             {PRESET_TAGS.map((tag) => (
               <button
