@@ -42,7 +42,7 @@ export default async function RecordDetailPage({
             </Link>
             <div>
               <h1 className="text-xl font-bold text-zinc-900">
-                {record.skillName}
+                {record.skillName || '미분류'}
               </h1>
               <div className="mt-1 flex items-center gap-1.5 text-sm text-zinc-500">
                 <CalendarIcon />

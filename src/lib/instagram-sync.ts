@@ -39,6 +39,52 @@ async function fetchAllReels(
   return { reels }
 }
 
+// 배치로 Claude에 기술명 추출 요청 (100개씩)
+export async function batchExtractSkills(
+  items: Array<{ id: string; caption: string }>,
+): Promise<Map<string, string>> {
+  const result = new Map<string, string>()
+  const BATCH_SIZE = 100
+
+  for (let i = 0; i < items.length; i += BATCH_SIZE) {
+    const batch = items.slice(i, i + BATCH_SIZE)
+    const input = batch.map((r) => ({
+      id: r.id,
+      caption: r.caption.slice(0, 300),
+    }))
+
+    try {
+      const message = await anthropic.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1024,
+        messages: [
+          {
+            role: 'user',
+            content: `다음 폴댄스 캡션에서 연습한 기술명을 추출해줘. 기술명이 여러 개면 ' · '로 연결해서 반환해. 기술명을 확인할 수 없으면 빈 문자열 ""을 반환해.
+
+주의: 기술명만 추출해. 감정, 설명, 수식어는 제외해. 예) "사이드 클라임" O, "사이드 클라임으로 올라가는게 힘들어" X
+
+기록: ${JSON.stringify(input)}
+
+응답 형식 (다른 말 없이 JSON만): {"1": "엔젤스핀 · 히어로", "2": "스타게이저", "3": ""}`,
+          },
+        ],
+      })
+
+      const raw = message.content[0].type === 'text' ? message.content[0].text.trim() : '{}'
+      const text = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
+      const parsed: Record<string, string> = JSON.parse(text)
+      for (const [id, skill] of Object.entries(parsed)) {
+        if (typeof skill === 'string' && skill.trim()) result.set(id, skill.trim())
+      }
+    } catch {
+      // 배치 실패 시 스킵
+    }
+  }
+
+  return result
+}
+
 // 배치로 Claude에 난이도 태그 요청 (100개씩)
 async function batchAssignTags(
   items: Array<{ id: string; skillName: string; caption: string | null }>,
@@ -122,21 +168,30 @@ export async function syncInstagramReels(
 
   if (newReels.length === 0) return { added: 0, total: reels.length }
 
-  // 새 릴스 AI 태그 일괄 생성 (reset 시엔 스킵 - 별도 배치 태그로 처리)
-  const tagMap = skipAiTags
-    ? new Map<string, string[]>()
-    : await batchAssignTags(
-        newReels.map((r) => ({
-          id: r.id,
-          skillName: extractSkillFromCaption(r.caption) || '미분류',
-          caption: r.caption ?? null,
-        })),
-      )
+  // #pd 해시태그로 기술명 추출, 없으면 AI 추출 대상으로 분류
+  const hashtagSkillMap = new Map(
+    newReels.map((r) => [r.id, extractSkillFromCaption(r.caption)])
+  )
+  const noHashtagReels = newReels.filter((r) => !hashtagSkillMap.get(r.id) && r.caption)
+
+  // AI 기술명 추출 + 태그 배정 (reset 시엔 스킵)
+  const [aiSkillMap, tagMap] = skipAiTags
+    ? [new Map<string, string>(), new Map<string, string[]>()]
+    : await Promise.all([
+        batchExtractSkills(noHashtagReels.map((r) => ({ id: r.id, caption: r.caption! }))),
+        batchAssignTags(
+          newReels.map((r) => ({
+            id: r.id,
+            skillName: hashtagSkillMap.get(r.id) || '미분류',
+            caption: r.caption ?? null,
+          })),
+        ),
+      ])
 
   // 새 기록 저장
   let added = 0
   for (const reel of newReels) {
-    const skillName = extractSkillFromCaption(reel.caption) || '미분류'
+    const skillName = hashtagSkillMap.get(reel.id) || aiSkillMap.get(reel.id) || '미분류'
     const tags = tagMap.get(reel.id) ?? []
 
     const record = await prisma.record.create({

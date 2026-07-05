@@ -139,7 +139,7 @@ export default async function RecordsPage({
                       })}
                     </div>
                     <p className="font-bold text-zinc-900">
-                      {record.skillName}
+                      {record.skillName || '미분류'}
                     </p>
                     {record.sessionNote && (
                       <p className="line-clamp-2 text-sm text-zinc-500">
