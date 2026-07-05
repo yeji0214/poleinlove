@@ -14,6 +14,7 @@ import {
 import { NoteCard } from "@/components/ui/NoteCard";
 import { ImageCarousel } from "@/components/records/ImageCarousel";
 import { DeleteRecordButton } from "@/components/records/DeleteRecordButton";
+import { AISummary } from "@/components/records/AISummary";
 
 export default async function RecordDetailPage({
   params,
@@ -111,6 +112,11 @@ export default async function RecordDetailPage({
               <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-600">
                 {record.sessionNote}
               </p>
+            )}
+            {record.sessionNote && (
+              <div className="mt-3">
+                <AISummary recordId={record.id} />
+              </div>
             )}
           </section>
         )}
