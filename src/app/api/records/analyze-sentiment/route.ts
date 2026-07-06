@@ -24,7 +24,7 @@ export async function POST() {
 
   const total = await prisma.record.count({ where: unprocessedWhere })
 
-  if (records.length === 0) return NextResponse.json({ analyzed: 0, remaining: 0 })
+  if (records.length === 0) return NextResponse.json({ processed: 0, remaining: 0 })
 
   const sentimentMap = await batchAnalyzeSentiments(
     records.map((r) => ({ id: String(r.id), caption: r.sessionNote! })),
@@ -39,5 +39,5 @@ export async function POST() {
   }
 
   const remaining = Math.max(0, total - records.length)
-  return NextResponse.json({ analyzed: records.length, remaining })
+  return NextResponse.json({ processed: records.length, remaining })
 }

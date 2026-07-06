@@ -22,7 +22,7 @@ export async function POST() {
   })
 
   if (records.length === 0) {
-    return NextResponse.json({ tagged: 0, remaining: 0 })
+    return NextResponse.json({ processed: 0, remaining: 0 })
   }
 
   const input = records.map((r) => ({
@@ -76,7 +76,7 @@ export async function POST() {
   }
 
   return NextResponse.json({
-    tagged: records.length,
+    processed: records.length,
     remaining: Math.max(0, total - records.length),
   })
 }
