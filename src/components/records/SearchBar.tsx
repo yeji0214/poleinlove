@@ -30,7 +30,7 @@ export function SearchBar({ defaultValue, tag }: Props) {
         value={value}
         onChange={(e) => setValue(e.target.value)}
         placeholder="기술명, 메모 검색..."
-        className="w-full bg-transparent text-sm text-zinc-700 outline-none placeholder:text-zinc-400"
+        className="w-full bg-transparent text-base text-zinc-700 outline-none placeholder:text-zinc-400"
       />
     </div>
   );

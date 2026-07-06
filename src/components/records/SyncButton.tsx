@@ -70,7 +70,7 @@ export function SyncButton({ hasToken }: { hasToken: boolean }) {
       onClick={() => sync()}
       className="rounded-2xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50"
     >
-      인스타 동기화
+      동기화
     </button>
   )
 }
