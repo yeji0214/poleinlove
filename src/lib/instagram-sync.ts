@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 
 const anthropic = new Anthropic()
 const DIFFICULTY_TAGS = ['입문', '초급', '중급', '고급'] as const
+const SENTIMENTS = ['좋았던', '어려웠던', '복습필요'] as const
+const BATCH_SIZE = 100
 
 interface InstagramMedia {
   id: string
@@ -39,27 +41,53 @@ async function fetchAllReels(
   return { reels }
 }
 
-const SENTIMENTS = ['좋았던', '어려웠던', '복습필요'] as const
-
-// 배치로 Claude에 감정/상태 분석 요청 (100개씩)
-export async function batchAnalyzeSentiments(
-  items: Array<{ id: string; caption: string }>,
-): Promise<Map<string, string[]>> {
-  const result = new Map<string, string[]>()
-  const BATCH_SIZE = 100
+// Claude에 100개씩 배치 요청 → 각 배치 응답을 파싱해 id별 결과 Map으로 합침.
+// 배치 단위 실패(요청 에러, JSON 파싱 실패)는 해당 배치만 스킵하고 계속 진행.
+async function batchClaudeExtract<I extends { id: string }, T>(
+  items: I[],
+  opts: {
+    toPromptItem: (item: I) => unknown
+    prompt: (inputJson: string) => string
+    parseValue: (raw: unknown) => T | undefined
+  },
+): Promise<Map<string, T>> {
+  const result = new Map<string, T>()
 
   for (let i = 0; i < items.length; i += BATCH_SIZE) {
     const batch = items.slice(i, i + BATCH_SIZE)
-    const input = batch.map((r) => ({ id: r.id, caption: r.caption.slice(0, 300) }))
+    const input = batch.map(opts.toPromptItem)
 
     try {
       const message = await anthropic.messages.create({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 1024,
-        messages: [
-          {
-            role: 'user',
-            content: `다음 폴댄스 캡션들을 읽고 각 기록의 감정·상태를 분류해줘.
+        messages: [{ role: 'user', content: opts.prompt(JSON.stringify(input)) }],
+      })
+
+      const raw = message.content[0].type === 'text' ? message.content[0].text.trim() : '{}'
+      // 마크다운 코드블록 제거
+      const text = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
+      const parsed: Record<string, unknown> = JSON.parse(text)
+
+      for (const [id, value] of Object.entries(parsed)) {
+        const parsedValue = opts.parseValue(value)
+        if (parsedValue !== undefined) result.set(id, parsedValue)
+      }
+    } catch {
+      // 배치 실패 시 스킵
+    }
+  }
+
+  return result
+}
+
+// 캡션에서 감정·상태 분류 (좋았던/어려웠던/복습필요)
+export function batchAnalyzeSentiments(
+  items: Array<{ id: string; caption: string }>,
+): Promise<Map<string, string[]>> {
+  return batchClaudeExtract(items, {
+    toPromptItem: (r) => ({ id: r.id, caption: r.caption.slice(0, 300) }),
+    prompt: (inputJson) => `다음 폴댄스 캡션들을 읽고 각 기록의 감정·상태를 분류해줘.
 
 분류 기준:
 - 좋았던: 기술이 잘 됐다, 성공했다, 기뻤다, 좋았다는 내용이 있을 때
@@ -68,97 +96,40 @@ export async function batchAnalyzeSentiments(
 
 여러 개 해당 가능. 캡션에서 명확히 읽히지 않으면 빈 배열 [].
 
-기록: ${JSON.stringify(input)}
+기록: ${inputJson}
 
 응답 형식 (다른 말 없이 JSON만): {"1": ["좋았던"], "2": ["어려웠던", "복습필요"], "3": []}`,
-          },
-        ],
-      })
-
-      const raw = message.content[0].type === 'text' ? message.content[0].text.trim() : '{}'
-      const text = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
-      const parsed: Record<string, string[]> = JSON.parse(text)
-      for (const [id, vals] of Object.entries(parsed)) {
-        const valid = [...new Set(vals.filter((v) => (SENTIMENTS as readonly string[]).includes(v)))]
-        result.set(id, valid)
-      }
-    } catch {
-      // 배치 실패 시 스킵
-    }
-  }
-
-  return result
+    parseValue: (raw) => {
+      const vals = Array.isArray(raw) ? raw : []
+      return [...new Set(vals.filter((v): v is string => (SENTIMENTS as readonly string[]).includes(v)))]
+    },
+  })
 }
 
-// 배치로 Claude에 기술명 추출 요청 (100개씩)
-export async function batchExtractSkills(
+// 캡션에서 연습한 기술명 추출
+export function batchExtractSkills(
   items: Array<{ id: string; caption: string }>,
 ): Promise<Map<string, string>> {
-  const result = new Map<string, string>()
-  const BATCH_SIZE = 100
-
-  for (let i = 0; i < items.length; i += BATCH_SIZE) {
-    const batch = items.slice(i, i + BATCH_SIZE)
-    const input = batch.map((r) => ({
-      id: r.id,
-      caption: r.caption.slice(0, 300),
-    }))
-
-    try {
-      const message = await anthropic.messages.create({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1024,
-        messages: [
-          {
-            role: 'user',
-            content: `다음 폴댄스 캡션에서 연습한 기술명을 추출해줘. 기술명이 여러 개면 ' · '로 연결해서 반환해. 기술명을 확인할 수 없으면 빈 문자열 ""을 반환해.
+  return batchClaudeExtract(items, {
+    toPromptItem: (r) => ({ id: r.id, caption: r.caption.slice(0, 300) }),
+    prompt: (inputJson) => `다음 폴댄스 캡션에서 연습한 기술명을 추출해줘. 기술명이 여러 개면 ' · '로 연결해서 반환해. 기술명을 확인할 수 없으면 빈 문자열 ""을 반환해.
 
 주의: 기술명만 추출해. 감정, 설명, 수식어는 제외해. 예) "사이드 클라임" O, "사이드 클라임으로 올라가는게 힘들어" X
 
-기록: ${JSON.stringify(input)}
+기록: ${inputJson}
 
 응답 형식 (다른 말 없이 JSON만): {"1": "엔젤스핀 · 히어로", "2": "스타게이저", "3": ""}`,
-          },
-        ],
-      })
-
-      const raw = message.content[0].type === 'text' ? message.content[0].text.trim() : '{}'
-      const text = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
-      const parsed: Record<string, string> = JSON.parse(text)
-      for (const [id, skill] of Object.entries(parsed)) {
-        if (typeof skill === 'string' && skill.trim()) result.set(id, skill.trim())
-      }
-    } catch {
-      // 배치 실패 시 스킵
-    }
-  }
-
-  return result
+    parseValue: (raw) => (typeof raw === 'string' && raw.trim() ? raw.trim() : undefined),
+  })
 }
 
-// 배치로 Claude에 난이도 태그 요청 (100개씩)
-async function batchAssignTags(
+// 기술명 + 캡션으로 난이도 태그 배정
+function batchAssignTags(
   items: Array<{ id: string; skillName: string; caption: string | null }>,
 ): Promise<Map<string, string[]>> {
-  const result = new Map<string, string[]>()
-  const BATCH_SIZE = 100
-
-  for (let i = 0; i < items.length; i += BATCH_SIZE) {
-    const batch = items.slice(i, i + BATCH_SIZE)
-    const input = batch.map((r) => ({
-      id: r.id,
-      skill: r.skillName,
-      caption: r.caption ? r.caption.slice(0, 300) : '',
-    }))
-
-    try {
-      const message = await anthropic.messages.create({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1024,
-        messages: [
-          {
-            role: 'user',
-            content: `다음 폴댄스 기록들의 난이도를 판단해줘. 입문/초급/중급/고급 중 명확히 해당하는 것만 JSON으로 반환해.
+  return batchClaudeExtract(items, {
+    toPromptItem: (r) => ({ id: r.id, skill: r.skillName, caption: r.caption ? r.caption.slice(0, 300) : '' }),
+    prompt: (inputJson) => `다음 폴댄스 기록들의 난이도를 판단해줘. 입문/초급/중급/고급 중 명확히 해당하는 것만 JSON으로 반환해.
 
 난이도 기준:
 - 입문: 폴댄스를 처음 배우는 단계의 기초 동작
@@ -168,26 +139,14 @@ async function batchAssignTags(
 
 중요: 캡션만으로 난이도를 확신할 수 없거나, 기술명만으로 판단이 어려우면 반드시 빈 배열 []을 반환해. 억지로 태그를 붙이지 마.
 
-기록: ${JSON.stringify(input)}
+기록: ${inputJson}
 
 응답 형식 (다른 말 없이 JSON만): {"id1": ["초급"], "id2": [], "id3": ["중급","고급"]}`,
-          },
-        ],
-      })
-
-      const raw = message.content[0].type === 'text' ? message.content[0].text.trim() : '{}'
-      const text = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
-      const parsed: Record<string, string[]> = JSON.parse(text)
-      for (const [id, tags] of Object.entries(parsed)) {
-        const valid = [...new Set(tags.filter((t) => (DIFFICULTY_TAGS as readonly string[]).includes(t)))]
-        result.set(id, valid)
-      }
-    } catch {
-      // 배치 실패 시 해당 배치는 태그 없이 진행
-    }
-  }
-
-  return result
+    parseValue: (raw) => {
+      const vals = Array.isArray(raw) ? raw : []
+      return [...new Set(vals.filter((t): t is string => (DIFFICULTY_TAGS as readonly string[]).includes(t)))]
+    },
+  })
 }
 
 export async function syncInstagramReels(
