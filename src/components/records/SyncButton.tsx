@@ -47,7 +47,7 @@ export function SyncButton({ hasToken }: { hasToken: boolean }) {
     return (
       <button
         onClick={() => sync()}
-        className="rounded-2xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50"
+        className="whitespace-nowrap rounded-2xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50"
       >
         {added}개 추가됨 · 재동기화
       </button>
@@ -68,7 +68,7 @@ export function SyncButton({ hasToken }: { hasToken: boolean }) {
   return (
     <button
       onClick={() => sync()}
-      className="rounded-2xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50"
+      className="whitespace-nowrap rounded-2xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50"
     >
       동기화
     </button>

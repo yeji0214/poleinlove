@@ -163,7 +163,7 @@ export default function RecordForm({
               onChange={handleSkillNameChange}
               onBlur={() => setSkillNameTouched(true)}
               aria-invalid={skillNameError}
-              placeholder="예) 발레리나, 버터플라이"
+              placeholder="예) 발레리나"
               className={`rounded-xl border px-3 py-2.5 text-base text-zinc-700 outline-none placeholder:text-zinc-400 ${
                 skillNameError
                   ? "border-red-300 focus:border-red-400"

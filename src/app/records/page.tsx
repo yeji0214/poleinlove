@@ -4,12 +4,10 @@ import { TAG_COLORS } from "@/lib/constants";
 import {
   CalendarIcon,
   ImagePlaceholderIcon,
-  LogoutIcon,
   ChartBarIcon,
 } from "@/components/ui/icons";
 import { TagFilter } from "@/components/records/TagFilter";
 import { SearchBar } from "@/components/records/SearchBar";
-import { logout } from "@/app/login/actions";
 import { SyncButton } from "@/components/records/SyncButton";
 
 export default async function RecordsPage({
@@ -50,15 +48,6 @@ export default async function RecordsPage({
             <p className="text-sm text-zinc-500">폴댄스 기록장</p>
           </div>
           <div className="flex items-center gap-2">
-            <form action={logout}>
-              <button
-                type="submit"
-                className="cursor-pointer rounded-xl p-2 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800"
-                aria-label="로그아웃"
-              >
-                <LogoutIcon />
-              </button>
-            </form>
             <Link
               href="/stats"
               className="rounded-xl p-2 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800"
