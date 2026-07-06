@@ -39,6 +39,57 @@ async function fetchAllReels(
   return { reels }
 }
 
+const SENTIMENTS = ['좋았던', '어려웠던', '복습필요'] as const
+
+// 배치로 Claude에 감정/상태 분석 요청 (100개씩)
+export async function batchAnalyzeSentiments(
+  items: Array<{ id: string; caption: string }>,
+): Promise<Map<string, string[]>> {
+  const result = new Map<string, string[]>()
+  const BATCH_SIZE = 100
+
+  for (let i = 0; i < items.length; i += BATCH_SIZE) {
+    const batch = items.slice(i, i + BATCH_SIZE)
+    const input = batch.map((r) => ({ id: r.id, caption: r.caption.slice(0, 300) }))
+
+    try {
+      const message = await anthropic.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1024,
+        messages: [
+          {
+            role: 'user',
+            content: `다음 폴댄스 캡션들을 읽고 각 기록의 감정·상태를 분류해줘.
+
+분류 기준:
+- 좋았던: 기술이 잘 됐다, 성공했다, 기뻤다, 좋았다는 내용이 있을 때
+- 어려웠던: 힘들었다, 어려웠다, 아팠다, 못했다는 내용이 있을 때
+- 복습필요: 더 연습하고 싶다, 아직 부족하다, 다음에 더 잘하고 싶다는 내용이 있을 때
+
+여러 개 해당 가능. 캡션에서 명확히 읽히지 않으면 빈 배열 [].
+
+기록: ${JSON.stringify(input)}
+
+응답 형식 (다른 말 없이 JSON만): {"1": ["좋았던"], "2": ["어려웠던", "복습필요"], "3": []}`,
+          },
+        ],
+      })
+
+      const raw = message.content[0].type === 'text' ? message.content[0].text.trim() : '{}'
+      const text = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
+      const parsed: Record<string, string[]> = JSON.parse(text)
+      for (const [id, vals] of Object.entries(parsed)) {
+        const valid = [...new Set(vals.filter((v) => (SENTIMENTS as readonly string[]).includes(v)))]
+        result.set(id, valid)
+      }
+    } catch {
+      // 배치 실패 시 스킵
+    }
+  }
+
+  return result
+}
+
 // 배치로 Claude에 기술명 추출 요청 (100개씩)
 export async function batchExtractSkills(
   items: Array<{ id: string; caption: string }>,
@@ -174,9 +225,10 @@ export async function syncInstagramReels(
   )
   const noHashtagReels = newReels.filter((r) => !hashtagSkillMap.get(r.id) && r.caption)
 
-  // AI 기술명 추출 + 태그 배정 (reset 시엔 스킵)
-  const [aiSkillMap, tagMap] = skipAiTags
-    ? [new Map<string, string>(), new Map<string, string[]>()]
+  // AI 기술명 추출 + 태그 배정 + 감정 분석 (reset 시엔 스킵)
+  const reelsWithCaption = newReels.filter((r) => r.caption)
+  const [aiSkillMap, tagMap, sentimentMap] = skipAiTags
+    ? [new Map<string, string>(), new Map<string, string[]>(), new Map<string, string[]>()]
     : await Promise.all([
         batchExtractSkills(noHashtagReels.map((r) => ({ id: r.id, caption: r.caption! }))),
         batchAssignTags(
@@ -186,6 +238,7 @@ export async function syncInstagramReels(
             caption: r.caption ?? null,
           })),
         ),
+        batchAnalyzeSentiments(reelsWithCaption.map((r) => ({ id: r.id, caption: r.caption! }))),
       ])
 
   // 새 기록 저장
@@ -193,6 +246,9 @@ export async function syncInstagramReels(
   for (const reel of newReels) {
     const skillName = hashtagSkillMap.get(reel.id) || aiSkillMap.get(reel.id) || '미분류'
     const tags = tagMap.get(reel.id) ?? []
+    const sentiments = reel.caption
+      ? (sentimentMap.get(reel.id) ?? ['없음'])
+      : ['없음']
 
     const record = await prisma.record.create({
       data: {
@@ -202,6 +258,7 @@ export async function syncInstagramReels(
         instagramMediaId: reel.id,
         instagramUrl: reel.permalink ?? null,
         tags,
+        sentiments,
       },
     })
 

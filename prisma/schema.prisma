@@ -19,6 +19,7 @@ model Record {
   performedAt      DateTime
   skillName        String
   tags             String[]
+  sentiments       String[]
   sessionNote      String?
   difficultyNote   String?
   didWellNote      String?

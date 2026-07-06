@@ -5,6 +5,7 @@ import {
   CalendarIcon,
   ImagePlaceholderIcon,
   LogoutIcon,
+  ChartBarIcon,
 } from "@/components/ui/icons";
 import { TagFilter } from "@/components/records/TagFilter";
 import { SearchBar } from "@/components/records/SearchBar";
@@ -58,6 +59,13 @@ export default async function RecordsPage({
                 <LogoutIcon />
               </button>
             </form>
+            <Link
+              href="/stats"
+              className="rounded-xl p-2 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800"
+              aria-label="통계"
+            >
+              <ChartBarIcon />
+            </Link>
             <SyncButton hasToken={!!instagramToken} />
             <Link
               href="/records/new"
