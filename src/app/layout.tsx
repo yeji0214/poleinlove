@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -20,10 +20,6 @@ export const metadata: Metadata = {
     title: "poleinlove",
     statusBarStyle: "default",
   },
-};
-
-export const viewport: Viewport = {
-  themeColor: "#fda4af",
 };
 
 export default function RootLayout({
