@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -15,6 +15,15 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "poleinlove",
   description: "폴댄스 기술 기록과 회고를 위한 개인 아카이브",
+  appleWebApp: {
+    capable: true,
+    title: "poleinlove",
+    statusBarStyle: "default",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#fda4af",
 };
 
 export default function RootLayout({
