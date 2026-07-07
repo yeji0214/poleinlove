@@ -6,3 +6,7 @@ export const TAG_COLORS: Record<string, string> = {
 };
 
 export const PRESET_TAGS = Object.keys(TAG_COLORS);
+
+export function sortByPresetOrder(tags: string[]): string[] {
+  return [...tags].sort((a, b) => PRESET_TAGS.indexOf(a) - PRESET_TAGS.indexOf(b));
+}

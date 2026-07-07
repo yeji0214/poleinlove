@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { TAG_COLORS } from "@/lib/constants";
+import { TAG_COLORS, sortByPresetOrder } from "@/lib/constants";
 import {
   CalendarIcon,
   ImagePlaceholderIcon,
@@ -67,7 +67,7 @@ export default async function RecordDetailPage({
         {/* 태그 */}
         {record.tags.filter((t) => t !== '미분류').length > 0 && (
           <div className="flex flex-wrap gap-2">
-            {[...new Set(record.tags.filter((t) => t !== '미분류'))].map((tag) => (
+            {sortByPresetOrder([...new Set(record.tags.filter((t) => t !== '미분류'))]).map((tag) => (
               <span
                 key={tag}
                 className={`rounded-full px-3 py-1 text-sm font-medium ${TAG_COLORS[tag] ?? "bg-stone-100 text-zinc-600"}`}
