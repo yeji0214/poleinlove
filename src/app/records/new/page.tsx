@@ -1,6 +1,5 @@
-import Link from "next/link";
 import RecordForm from "@/components/records/RecordForm";
-import { ArrowLeftIcon } from "@/components/ui/icons";
+import { BackButton } from "@/components/ui/BackButton";
 import { createRecord } from "./actions";
 
 export default function NewRecordPage() {
@@ -8,9 +7,7 @@ export default function NewRecordPage() {
     <div className="min-h-screen bg-stone-50">
       <header className="mx-auto w-full max-w-xl px-5 pb-4 pt-8">
         <div className="flex items-center gap-4">
-          <Link href="/records" className="rounded-xl p-2 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800">
-            <ArrowLeftIcon />
-          </Link>
+          <BackButton fallbackHref="/records" />
           <div>
             <h1 className="text-xl font-bold text-zinc-900">새 기록</h1>
             <p className="text-sm text-zinc-600">오늘의 폴댄스는 어땠나요?</p>

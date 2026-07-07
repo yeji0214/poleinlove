@@ -1,6 +1,5 @@
-import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { ArrowLeftIcon } from "@/components/ui/icons";
+import { BackButton } from "@/components/ui/BackButton";
 
 const DIFFICULTY_TAGS = ["입문", "초급", "중급", "고급"] as const;
 const TAG_BAR_COLORS: Record<string, string> = {
@@ -56,12 +55,7 @@ export default async function StatsPage() {
     <div className="min-h-screen bg-stone-50">
       <header className="mx-auto w-full max-w-xl px-5 pb-4 pt-8">
         <div className="flex items-center gap-3">
-          <Link
-            href="/records"
-            className="rounded-xl p-2 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800"
-          >
-            <ArrowLeftIcon />
-          </Link>
+          <BackButton fallbackHref="/records" />
           <div>
             <h1 className="text-xl font-bold text-zinc-900">통계</h1>
             <p className="text-sm text-zinc-500">나의 폴댄스 기록 분석</p>

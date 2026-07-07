@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { TAG_COLORS } from "@/lib/constants";
 import {
-  ArrowLeftIcon,
   CalendarIcon,
   ImagePlaceholderIcon,
   ExclamationIcon,
@@ -11,6 +10,7 @@ import {
   ArrowUpCircleIcon,
   PencilIcon,
 } from "@/components/ui/icons";
+import { BackButton } from "@/components/ui/BackButton";
 import { NoteCard } from "@/components/ui/NoteCard";
 import { ImageCarousel } from "@/components/records/ImageCarousel";
 import { DeleteRecordButton } from "@/components/records/DeleteRecordButton";
@@ -34,12 +34,7 @@ export default async function RecordDetailPage({
       <header className="mx-auto w-full max-w-xl px-5 pb-4 pt-8">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-4">
-            <Link
-              href="/records"
-              className="rounded-xl p-2 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800"
-            >
-              <ArrowLeftIcon />
-            </Link>
+            <BackButton fallbackHref="/records" />
             <div>
               <h1 className="text-xl font-bold text-zinc-900">
                 {record.skillName || '미분류'}
