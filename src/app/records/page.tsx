@@ -13,10 +13,9 @@ export default async function RecordsPage({
   searchParams: Promise<{ tag?: string; q?: string }>;
 }) {
   const { tag, q } = await searchParams;
-  const instagramToken = await prisma.instagramToken.findFirst({ select: { id: true } });
-
   const where = buildRecordWhere(tag, q);
-  const [records, total] = await Promise.all([
+  const [instagramToken, records, total] = await Promise.all([
+    prisma.instagramToken.findFirst({ select: { id: true } }),
     prisma.record.findMany({
       where,
       orderBy: { performedAt: "desc" },
