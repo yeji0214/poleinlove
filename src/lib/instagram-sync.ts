@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { prisma } from '@/lib/prisma'
+import { supabase } from '@/lib/supabase'
 
 const anthropic = new Anthropic()
 const DIFFICULTY_TAGS = ['입문', '초급', '중급', '고급'] as const
@@ -20,6 +21,27 @@ function extractSkillFromCaption(caption: string | null | undefined): string {
   const matches = [...caption.matchAll(/#pd([a-zA-Z가-힣]+)/gi)]
   if (matches.length === 0) return ''
   return matches.map((m) => m[1].charAt(0).toUpperCase() + m[1].slice(1)).join(' · ')
+}
+
+// 인스타그램 썸네일 URL은 며칠 후 만료되는 임시 서명 URL이라, 다운로드해서
+// Supabase Storage에 영구 저장하고 그 URL을 반환. 실패 시 null.
+export async function uploadThumbnailToStorage(thumbnailUrl: string): Promise<string | null> {
+  try {
+    const res = await fetch(thumbnailUrl)
+    if (!res.ok) return null
+    const blob = await res.blob()
+
+    const path = `instagram-${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`
+    const { error } = await supabase.storage
+      .from('record-images')
+      .upload(path, blob, { contentType: 'image/jpeg' })
+    if (error) return null
+
+    const { data } = supabase.storage.from('record-images').getPublicUrl(path)
+    return data.publicUrl
+  } catch {
+    return null
+  }
 }
 
 async function fetchAllReels(
@@ -222,9 +244,12 @@ export async function syncInstagramReels(
     })
 
     if (reel.thumbnail_url) {
-      await prisma.image.create({
-        data: { url: reel.thumbnail_url, recordId: record.id, order: 0 },
-      })
+      const permanentUrl = await uploadThumbnailToStorage(reel.thumbnail_url)
+      if (permanentUrl) {
+        await prisma.image.create({
+          data: { url: permanentUrl, recordId: record.id, order: 0 },
+        })
+      }
     }
 
     added++
