@@ -9,7 +9,7 @@ export function Logo({ className }: LogoProps) {
     <div className={`flex items-center gap-1 ${className ?? ""}`}>
       <LogoMark />
       <h1 className="text-xl font-semibold tracking-tight text-zinc-900">
-        Pole<span className="text-[#C97985]">in</span>love
+        Poleinlove
       </h1>
     </div>
   );
