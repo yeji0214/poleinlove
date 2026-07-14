@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { LogoMark } from "./LogoMark";
 
 type LogoProps = {
@@ -6,11 +7,11 @@ type LogoProps = {
 
 export function Logo({ className }: LogoProps) {
   return (
-    <div className={`flex items-center gap-1 ${className ?? ""}`}>
+    <Link href="/records" className={`flex items-center gap-1 ${className ?? ""}`}>
       <LogoMark />
       <h1 className="text-xl font-semibold tracking-tight text-zinc-900">
         Poleinlove
       </h1>
-    </div>
+    </Link>
   );
 }
