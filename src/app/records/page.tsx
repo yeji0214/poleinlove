@@ -6,6 +6,7 @@ import { TagFilter } from "@/components/records/TagFilter";
 import { SearchBar } from "@/components/records/SearchBar";
 import { SyncButton } from "@/components/records/SyncButton";
 import { RecordList } from "@/components/records/RecordList";
+import { Logo } from "@/components/ui/Logo";
 
 export default async function RecordsPage({
   searchParams,
@@ -29,10 +30,7 @@ export default async function RecordsPage({
     <div className="min-h-screen bg-stone-50">
       <header className="mx-auto w-full max-w-2xl px-5 pb-4 pt-8">
         <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-zinc-900">Poleinlove</h1>
-            <p className="text-sm text-zinc-500">폴댄스 기록장</p>
-          </div>
+          <Logo />
           <div className="flex items-center gap-2">
             <Link
               href="/stats"
