@@ -45,7 +45,7 @@ export default async function RecordsPage({
                 href="/records/new"
                 className="rounded-2xl bg-rose-300 px-4 py-2.5 text-sm font-medium text-white hover:opacity-90 transition-opacity whitespace-nowrap"
               >
-                + &nbsp;새 기록
+                + <span className="hidden sm:inline">새 </span>기록
               </Link>
             </div>
           </div>
