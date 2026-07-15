@@ -28,24 +28,26 @@ export default async function RecordsPage({
 
   return (
     <div className="min-h-screen bg-stone-50">
-      <header className="mx-auto w-full max-w-2xl px-5 pb-4 pt-8">
-        <div className="flex items-start justify-between">
-          <Logo />
-          <div className="flex items-center gap-2">
-            <Link
-              href="/stats"
-              className="rounded-xl p-2 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800"
-              aria-label="통계"
-            >
-              <ChartBarIcon />
-            </Link>
-            <SyncButton hasToken={!!instagramToken} />
-            <Link
-              href="/records/new"
-              className="rounded-2xl bg-rose-300 px-4 py-2.5 text-sm font-medium text-white hover:opacity-90 transition-opacity whitespace-nowrap"
-            >
-              + &nbsp;새 기록
-            </Link>
+      <header className="sticky top-0 z-20 border-b border-zinc-100 bg-stone-50">
+        <div className="mx-auto w-full max-w-2xl px-5 pb-4 pt-8">
+          <div className="flex items-start justify-between">
+            <Logo />
+            <div className="flex items-center gap-2">
+              <Link
+                href="/stats"
+                className="rounded-xl p-2 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800"
+                aria-label="통계"
+              >
+                <ChartBarIcon />
+              </Link>
+              <SyncButton hasToken={!!instagramToken} />
+              <Link
+                href="/records/new"
+                className="rounded-2xl bg-rose-300 px-4 py-2.5 text-sm font-medium text-white hover:opacity-90 transition-opacity whitespace-nowrap"
+              >
+                + &nbsp;새 기록
+              </Link>
+            </div>
           </div>
         </div>
       </header>
