@@ -1,12 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 
 export function SyncButton({ hasToken }: { hasToken: boolean }) {
-  const [status, setStatus] = useState<'idle' | 'syncing' | 'done' | 'error'>('idle')
-  const [added, setAdded] = useState<number | null>(null)
-  const router = useRouter()
+  const [status, setStatus] = useState<'idle' | 'syncing' | 'error'>('idle')
 
   if (!hasToken) return null
 
@@ -24,9 +21,7 @@ export function SyncButton({ hasToken }: { hasToken: boolean }) {
         setStatus('error')
         return
       }
-      setAdded(data.added)
-      setStatus('done')
-      router.refresh()
+      window.location.reload()
     } catch {
       setStatus('error')
     }
@@ -36,20 +31,9 @@ export function SyncButton({ hasToken }: { hasToken: boolean }) {
     return (
       <button
         disabled
-        className="rounded-2xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-400"
+        className="whitespace-nowrap rounded-2xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-400"
       >
-        동기화 중…
-      </button>
-    )
-  }
-
-  if (status === 'done') {
-    return (
-      <button
-        onClick={() => sync()}
-        className="whitespace-nowrap rounded-2xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50"
-      >
-        {added}개 추가됨 · 재동기화
+        동기화…
       </button>
     )
   }
@@ -58,7 +42,7 @@ export function SyncButton({ hasToken }: { hasToken: boolean }) {
     return (
       <button
         onClick={() => sync()}
-        className="rounded-2xl border border-red-200 bg-white px-4 py-2.5 text-sm font-medium text-red-500 transition-colors hover:bg-red-50"
+        className="whitespace-nowrap rounded-2xl border border-red-200 bg-white px-4 py-2.5 text-sm font-medium text-red-500 transition-colors hover:bg-red-50"
       >
         오류 · 재시도
       </button>
