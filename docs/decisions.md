@@ -97,7 +97,9 @@ WITH CHECK (bucket_id = 'record-images');
 
 ### Webhook 대신 주기적 폴링 선택
 
-실시간으로 반영하려면 Instagram Graph API의 webhook을 쓰는 방법도 있지만, "새 게시물 업로드"를 안정적으로 알려주는 webhook 필드가 공식적으로 지원되지 않고 Meta 앱 심사가 다시 필요할 수 있어 복잡도가 높다. 개인용 앱이고 게시 빈도도 하루 1건 수준이라, 기존 동기화 로직(`syncInstagramReels`)을 그대로 재사용해 Vercel Cron으로 매시간(`0 * * * *`) 자동 실행하는 방식을 선택했다. 호출 빈도가 낮아 인스타그램 API 레이트리밋이나 비용 부담이 없다.
+실시간으로 반영하려면 Instagram Graph API의 webhook을 쓰는 방법도 있지만, "새 게시물 업로드"를 안정적으로 알려주는 webhook 필드가 공식적으로 지원되지 않고 Meta 앱 심사가 다시 필요할 수 있어 복잡도가 높다. 개인용 앱이고 게시 빈도도 하루 1건 수준이라, 기존 동기화 로직(`syncInstagramReels`)을 그대로 재사용해 Vercel Cron으로 자동 실행하는 방식을 선택했다.
+
+Vercel Hobby(무료) 플랜은 Cron Job이 하루 1회로 제한된다. 처음엔 매시간(`0 * * * *`)으로 설정했는데, Hobby 플랜 제한을 초과하는 스케줄은 배포 자체가 생성되지 않고 조용히 실패해서(Deployments 목록에 아예 나타나지 않음) 원인을 찾는 데 시간이 걸렸다. 매일 한국시간 밤 10시(UTC 13시, `0 13 * * *`)에 한 번 실행하는 것으로 변경했다.
 
 ### 별도 라우트 + CRON_SECRET으로 보호
 
