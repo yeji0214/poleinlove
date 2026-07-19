@@ -90,3 +90,15 @@ WITH CHECK (bucket_id = 'record-images');
 ### 로그아웃
 
 기록 목록 페이지 헤더에 로그아웃 버튼을 추가했다. 클릭하면 세션 쿠키를 삭제하고 `/login`으로 이동한다.
+
+## 10. 인스타그램 자동 동기화 (Vercel Cron)
+
+기존에는 사용자가 직접 동기화 버튼을 눌러야만 새 릴스가 반영됐다. 매번 확인하고 눌러야 하는 번거로움을 없애기 위해, 새 게시물이 자동으로 반영되도록 개선했다.
+
+### Webhook 대신 주기적 폴링 선택
+
+실시간으로 반영하려면 Instagram Graph API의 webhook을 쓰는 방법도 있지만, "새 게시물 업로드"를 안정적으로 알려주는 webhook 필드가 공식적으로 지원되지 않고 Meta 앱 심사가 다시 필요할 수 있어 복잡도가 높다. 개인용 앱이고 게시 빈도도 하루 1건 수준이라, 기존 동기화 로직(`syncInstagramReels`)을 그대로 재사용해 Vercel Cron으로 매시간(`0 * * * *`) 자동 실행하는 방식을 선택했다. 호출 빈도가 낮아 인스타그램 API 레이트리밋이나 비용 부담이 없다.
+
+### 별도 라우트 + CRON_SECRET으로 보호
+
+기존 `/api/instagram/sync`는 수동 동기화 버튼 전용(POST, `reset` 옵션 포함)이라 그대로 재사용하지 않고 `/api/cron/instagram-sync`(GET)를 새로 만들었다. 이 라우트는 세션 쿠키가 아니라 Vercel이 크론 요청 시 자동으로 담아 보내는 `Authorization: Bearer $CRON_SECRET` 헤더로 보호한다. `src/proxy.ts`의 matcher에서 `api/cron`을 제외해, 로그인 세션이 없는 크론 요청도 이 라우트에 한해 통과하도록 했다. `CRON_SECRET`은 Vercel 프로젝트 환경 변수로 등록한다.
