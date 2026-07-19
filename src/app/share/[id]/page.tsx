@@ -27,7 +27,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!record) return { title: "poleinlove" };
 
-  const title = record.skillName || "미분류";
+  const MAX_TITLE_LENGTH = 30;
+  const rawTitle = record.skillName || "미분류";
+  const title =
+    rawTitle.length > MAX_TITLE_LENGTH
+      ? `${rawTitle.slice(0, MAX_TITLE_LENGTH)}...`
+      : rawTitle;
   const description = record.performedAt.toLocaleDateString("ko-KR", {
     year: "numeric",
     month: "long",
