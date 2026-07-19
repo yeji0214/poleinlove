@@ -27,9 +27,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!record) return { title: "poleinlove" };
 
-  const title = `${record.skillName || "미분류"} 기록 · poleinlove`;
-  const description =
-    record.sessionNote?.slice(0, 100) || "폴댄스 기록과 회고를 확인해보세요.";
+  const title = record.skillName || "미분류";
+  const description = record.performedAt.toLocaleDateString("ko-KR", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
   const image = record.images[0]?.url;
 
   return {
