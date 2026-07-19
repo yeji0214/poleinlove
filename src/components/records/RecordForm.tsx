@@ -126,7 +126,7 @@ export default function RecordForm({
       {/* 기본 정보 */}
       <section className="rounded-2xl bg-white p-5 shadow-sm">
         <h2 className="mb-5 text-base font-bold text-zinc-900">기본 정보</h2>
-        <div className="mb-4 grid grid-cols-2 gap-3">
+        <div className="mb-4 flex flex-col gap-4">
           <div className="flex flex-col gap-1">
             <label
               htmlFor="performedAt"

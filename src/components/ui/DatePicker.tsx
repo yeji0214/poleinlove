@@ -118,7 +118,7 @@ export function DatePicker({
         id={id}
         type="button"
         onClick={openPicker}
-        className={`flex w-full items-center justify-between rounded-xl border px-3 py-2.5 text-left text-base outline-none ${
+        className={`flex w-full items-center justify-between whitespace-nowrap rounded-xl border px-3 py-2.5 text-left text-base outline-none ${
           invalid
             ? "border-red-300 focus:border-red-400"
             : "border-zinc-200 focus:border-zinc-400"
