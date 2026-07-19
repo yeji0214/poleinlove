@@ -14,6 +14,7 @@ import { BackButton } from "@/components/ui/BackButton";
 import { NoteCard } from "@/components/ui/NoteCard";
 import { ImageCarousel } from "@/components/records/ImageCarousel";
 import { DeleteRecordButton } from "@/components/records/DeleteRecordButton";
+import { ShareRecordButton } from "@/components/records/ShareRecordButton";
 import { AISummary } from "@/components/records/AISummary";
 
 export default async function RecordDetailPage({
@@ -51,6 +52,7 @@ export default async function RecordDetailPage({
             </div>
           </div>
           <div className="flex items-center gap-1">
+            <ShareRecordButton id={record.id} />
             <Link
               href={`/records/${record.id}/edit`}
               className="rounded-xl p-2 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800"
