@@ -7,6 +7,30 @@ const DIFFICULTY_TAGS = ['입문', '초급', '중급', '고급'] as const
 const SENTIMENTS = ['좋았던', '어려웠던', '복습필요'] as const
 const BATCH_SIZE = 100
 
+// 만료 7일 이내면 인스타그램 refresh API로 장기 토큰을 갱신하고 DB에 반영.
+// 저장된 토큰이 없으면 null.
+export async function getValidAccessToken(): Promise<string | null> {
+  const token = await prisma.instagramToken.findFirst()
+  if (!token) return null
+
+  if (token.expiresAt.getTime() - Date.now() >= 7 * 24 * 60 * 60 * 1000) {
+    return token.accessToken
+  }
+
+  const res = await fetch(
+    `https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=${token.accessToken}`,
+  )
+  const refreshed = await res.json()
+  if (!refreshed.access_token) return token.accessToken
+
+  const expiresAt = new Date(Date.now() + refreshed.expires_in * 1000)
+  await prisma.instagramToken.update({
+    where: { id: token.id },
+    data: { accessToken: refreshed.access_token, expiresAt },
+  })
+  return refreshed.access_token
+}
+
 interface InstagramMedia {
   id: string
   caption?: string
