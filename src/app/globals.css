@@ -24,3 +24,13 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
 }
+
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+a,
+label[for],
+input[type="checkbox"],
+input[type="radio"],
+select {
+  cursor: pointer;
+}
