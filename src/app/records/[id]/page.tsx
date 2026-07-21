@@ -52,7 +52,7 @@ export default async function RecordDetailPage({
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <ShareRecordButton id={record.id} />
+            <ShareRecordButton id={record.id} skillName={record.skillName} />
             <Link
               href={`/records/${record.id}/edit`}
               className="rounded-xl p-2 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800"

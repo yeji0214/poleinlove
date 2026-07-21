@@ -3,11 +3,27 @@
 import { useState } from "react";
 import { ShareIcon } from "@/components/ui/icons";
 
-export function ShareRecordButton({ id }: { id: number }) {
+export function ShareRecordButton({
+  id,
+  skillName,
+}: {
+  id: number;
+  skillName: string | null;
+}) {
   const [copied, setCopied] = useState(false);
 
   async function handleShare() {
     const url = `${window.location.origin}/share/${id}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: skillName || "poleinlove", url });
+      } catch {
+        // 사용자가 공유 시트를 취소한 경우 등은 무시
+      }
+      return;
+    }
+
     await navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
