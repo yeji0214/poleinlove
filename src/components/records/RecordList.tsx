@@ -47,20 +47,20 @@ export function RecordList({ initialRecords, total, tag, q }: Props) {
       <div className="flex flex-col items-center gap-2 py-24 text-center">
         {tag || q ? (
           <>
-            <p className="text-zinc-500">
-              {tag && <span className="font-medium text-zinc-700">#{tag}</span>}
+            <p className="text-zinc-500 dark:text-zinc-400">
+              {tag && <span className="font-medium text-zinc-700 dark:text-zinc-300">#{tag}</span>}
               {tag && q && " · "}
-              {q && <span className="font-medium text-zinc-700">&ldquo;{q}&rdquo;</span>}
+              {q && <span className="font-medium text-zinc-700 dark:text-zinc-300">&ldquo;{q}&rdquo;</span>}
               {" "}에 맞는 기록이 없어요
             </p>
-            <Link href="/records" className="text-sm text-zinc-400 underline underline-offset-2">
+            <Link href="/records" className="text-sm text-zinc-400 underline underline-offset-2 dark:text-zinc-500">
               전체 보기
             </Link>
           </>
         ) : (
           <>
-            <p className="text-zinc-500">아직 기록이 없어요</p>
-            <Link href="/records/new" className="text-sm text-zinc-400 underline underline-offset-2">
+            <p className="text-zinc-500 dark:text-zinc-400">아직 기록이 없어요</p>
+            <Link href="/records/new" className="text-sm text-zinc-400 underline underline-offset-2 dark:text-zinc-500">
               첫 기록 남기기
             </Link>
           </>
@@ -78,7 +78,7 @@ export function RecordList({ initialRecords, total, tag, q }: Props) {
       </ul>
       {hasMore && (
         <div ref={sentinelRef} className="flex justify-center py-6">
-          <span className="text-xs text-zinc-400">{loading ? "불러오는 중..." : ""}</span>
+          <span className="text-xs text-zinc-400 dark:text-zinc-500">{loading ? "불러오는 중..." : ""}</span>
         </div>
       )}
     </>

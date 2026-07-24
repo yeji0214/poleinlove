@@ -31,7 +31,7 @@ export function SyncButton({ hasToken }: { hasToken: boolean }) {
     return (
       <button
         disabled
-        className="whitespace-nowrap rounded-2xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-400"
+        className="whitespace-nowrap rounded-2xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-500"
       >
         동기화…
       </button>
@@ -42,7 +42,7 @@ export function SyncButton({ hasToken }: { hasToken: boolean }) {
     return (
       <button
         onClick={() => sync()}
-        className="whitespace-nowrap rounded-2xl border border-red-200 bg-white px-4 py-2.5 text-sm font-medium text-red-500 transition-colors hover:bg-red-50"
+        className="whitespace-nowrap rounded-2xl border border-red-200 bg-white px-4 py-2.5 text-sm font-medium text-red-500 transition-colors hover:bg-red-50 dark:border-red-900 dark:bg-zinc-900 dark:text-red-400 dark:hover:bg-red-950"
       >
         오류 · 재시도
       </button>
@@ -52,7 +52,7 @@ export function SyncButton({ hasToken }: { hasToken: boolean }) {
   return (
     <button
       onClick={() => sync()}
-      className="whitespace-nowrap rounded-2xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50"
+      className="whitespace-nowrap rounded-2xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800"
     >
       동기화
     </button>

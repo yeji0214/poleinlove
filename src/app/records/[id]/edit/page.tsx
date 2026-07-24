@@ -20,21 +20,21 @@ export default async function EditRecordPage({
   const boundUpdateRecord = updateRecord.bind(null, record.id);
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-stone-50 dark:bg-zinc-950">
       <header className="mx-auto w-full max-w-xl px-5 pb-4 pt-8">
         <div className="flex items-center gap-4">
           <BackButton fallbackHref={`/records/${record.id}`} />
           <div>
-            <h1 className="text-xl font-bold text-zinc-900">기록 수정</h1>
-            <p className="text-sm text-zinc-600">내용을 수정해보세요</p>
+            <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">기록 수정</h1>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">내용을 수정해보세요</p>
           </div>
         </div>
       </header>
       <main className="mx-auto w-full max-w-xl px-4 pb-12">
         {record.sessionNote && (
-          <div className="mb-4 rounded-2xl bg-white p-5 shadow-sm">
-            <p className="mb-2 text-xs font-medium text-zinc-400">인스타그램 캡션</p>
-            <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-600">
+          <div className="mb-4 rounded-2xl bg-white p-5 shadow-sm dark:bg-zinc-900">
+            <p className="mb-2 text-xs font-medium text-zinc-400 dark:text-zinc-500">인스타그램 캡션</p>
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
               {record.sessionNote}
             </p>
           </div>

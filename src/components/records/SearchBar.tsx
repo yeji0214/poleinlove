@@ -23,14 +23,14 @@ export function SearchBar({ defaultValue, tag }: Props) {
   }, [value]);
 
   return (
-    <div className="mb-4 flex items-center gap-2 rounded-2xl bg-white px-4 py-3 shadow-sm">
-      <SearchIcon className="shrink-0 text-zinc-400" />
+    <div className="mb-4 flex items-center gap-2 rounded-2xl bg-white px-4 py-3 shadow-sm dark:bg-zinc-900">
+      <SearchIcon className="shrink-0 text-zinc-400 dark:text-zinc-500" />
       <input
         type="text"
         value={value}
         onChange={(e) => setValue(e.target.value)}
         placeholder="기술명, 메모 검색..."
-        className="w-full bg-transparent text-base text-zinc-700 outline-none placeholder:text-zinc-400"
+        className="w-full bg-transparent text-base text-zinc-700 outline-none placeholder:text-zinc-400 dark:text-zinc-200 dark:placeholder:text-zinc-500"
       />
     </div>
   );

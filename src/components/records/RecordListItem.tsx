@@ -16,7 +16,7 @@ export function RecordListItem({ record }: { record: RecordListItemData }) {
     <li>
       <Link
         href={`/records/${record.id}`}
-        className="flex gap-4 rounded-2xl bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+        className="flex gap-4 rounded-2xl bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:bg-zinc-900"
       >
         {/* 이미지 썸네일 */}
         {record.images[0] ? (
@@ -27,14 +27,14 @@ export function RecordListItem({ record }: { record: RecordListItemData }) {
             className="h-24 w-24 shrink-0 rounded-xl object-cover"
           />
         ) : (
-          <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-xl bg-zinc-100">
-            <ImagePlaceholderIcon className="h-6 w-6 text-zinc-300" />
+          <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800">
+            <ImagePlaceholderIcon className="h-6 w-6 text-zinc-300 dark:text-zinc-600" />
           </div>
         )}
 
         {/* 내용 */}
         <div className="flex min-w-0 flex-col justify-center gap-1">
-          <div className="flex items-center gap-1.5 text-xs text-zinc-400">
+          <div className="flex items-center gap-1.5 text-xs text-zinc-400 dark:text-zinc-500">
             <CalendarIcon />
             {record.performedAt.toLocaleDateString("ko-KR", {
               year: "numeric",
@@ -42,11 +42,11 @@ export function RecordListItem({ record }: { record: RecordListItemData }) {
               day: "numeric",
             })}
           </div>
-          <p className="font-bold text-zinc-900">
+          <p className="font-bold text-zinc-900 dark:text-zinc-100">
             {record.skillName || "미분류"}
           </p>
           {record.sessionNote && (
-            <p className="line-clamp-2 text-sm text-zinc-500">
+            <p className="line-clamp-2 text-sm text-zinc-500 dark:text-zinc-400">
               {record.sessionNote}
             </p>
           )}
@@ -55,7 +55,7 @@ export function RecordListItem({ record }: { record: RecordListItemData }) {
               {sortByPresetOrder([...new Set(record.tags.filter((t) => t !== "미분류"))]).map((t) => (
                 <span
                   key={t}
-                  className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${TAG_COLORS[t] ?? "bg-stone-100 text-zinc-600"}`}
+                  className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${TAG_COLORS[t] ?? "bg-stone-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"}`}
                 >
                   {t}
                 </span>

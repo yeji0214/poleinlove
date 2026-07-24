@@ -31,16 +31,16 @@ export default async function RecordDetailPage({
   if (!record) notFound();
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-stone-50 dark:bg-zinc-950">
       <header className="mx-auto w-full max-w-xl px-5 pb-4 pt-8">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-4">
             <BackButton fallbackHref="/records" />
             <div>
-              <h1 className="text-xl font-bold text-zinc-900">
+              <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
                 {record.skillName || '미분류'}
               </h1>
-              <div className="mt-1 flex items-center gap-1.5 text-sm text-zinc-500">
+              <div className="mt-1 flex items-center gap-1.5 text-sm text-zinc-500 dark:text-zinc-400">
                 <CalendarIcon />
                 {record.performedAt.toLocaleDateString("ko-KR", {
                   year: "numeric",
@@ -55,7 +55,7 @@ export default async function RecordDetailPage({
             <ShareRecordButton id={record.id} skillName={record.skillName} />
             <Link
               href={`/records/${record.id}/edit`}
-              className="rounded-xl p-2 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800"
+              className="rounded-xl p-2 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
               aria-label="기록 수정"
             >
               <PencilIcon />
@@ -72,7 +72,7 @@ export default async function RecordDetailPage({
             {sortByPresetOrder([...new Set(record.tags.filter((t) => t !== '미분류'))]).map((tag) => (
               <span
                 key={tag}
-                className={`rounded-full px-3 py-1 text-sm font-medium ${TAG_COLORS[tag] ?? "bg-stone-100 text-zinc-600"}`}
+                className={`rounded-full px-3 py-1 text-sm font-medium ${TAG_COLORS[tag] ?? "bg-stone-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"}`}
               >
                 {tag}
               </span>
@@ -82,8 +82,8 @@ export default async function RecordDetailPage({
 
         {/* 사진 */}
         {record.images.length === 0 ? (
-          <div className="flex aspect-square w-full items-center justify-center rounded-2xl bg-zinc-100">
-            <ImagePlaceholderIcon className="h-10 w-10 text-zinc-300" />
+          <div className="flex aspect-square w-full items-center justify-center rounded-2xl bg-zinc-100 dark:bg-zinc-900">
+            <ImagePlaceholderIcon className="h-10 w-10 text-zinc-300 dark:text-zinc-600" />
           </div>
         ) : (
           <ImageCarousel images={record.images} altFallback={record.skillName} />
@@ -91,22 +91,22 @@ export default async function RecordDetailPage({
 
         {/* 인스타그램 캡션 + 링크 */}
         {(record.sessionNote || record.instagramUrl) && (
-          <section className="rounded-2xl bg-white p-5 shadow-sm">
+          <section className="rounded-2xl bg-white p-5 shadow-sm dark:bg-zinc-900">
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="font-bold text-zinc-900">인스타그램 캡션</h2>
+              <h2 className="font-bold text-zinc-900 dark:text-zinc-100">인스타그램 캡션</h2>
               {record.instagramUrl && (
                 <a
                   href={record.instagramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 rounded-xl bg-zinc-50 px-3 py-1.5 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-700"
+                  className="flex items-center gap-1 rounded-xl bg-zinc-50 px-3 py-1.5 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
                 >
                   릴스 보러가기 →
                 </a>
               )}
             </div>
             {record.sessionNote && (
-              <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-600">
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
                 {record.sessionNote}
               </p>
             )}
@@ -120,11 +120,11 @@ export default async function RecordDetailPage({
 
         {record.difficultyNote && (
           <NoteCard
-            borderColor="border-l-amber-200"
+            borderColor="border-l-amber-200 dark:border-l-amber-700"
             icon={<ExclamationIcon className="text-amber-400" />}
             title="어려웠던 점"
           >
-            <p className="text-sm leading-relaxed text-zinc-600">
+            <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
               {record.difficultyNote}
             </p>
           </NoteCard>
@@ -132,11 +132,11 @@ export default async function RecordDetailPage({
 
         {record.didWellNote && (
           <NoteCard
-            borderColor="border-l-emerald-200"
+            borderColor="border-l-emerald-200 dark:border-l-emerald-700"
             icon={<CheckCircleIcon className="text-emerald-400" />}
             title="좋았던 점"
           >
-            <p className="text-sm leading-relaxed text-zinc-600">
+            <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
               {record.didWellNote}
             </p>
           </NoteCard>
@@ -144,11 +144,11 @@ export default async function RecordDetailPage({
 
         {record.improvementNote && (
           <NoteCard
-            borderColor="border-l-sky-200"
+            borderColor="border-l-sky-200 dark:border-l-sky-700"
             icon={<ArrowUpCircleIcon className="text-sky-400" />}
             title="아쉬웠던 점"
           >
-            <p className="text-sm leading-relaxed text-zinc-600">
+            <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
               {record.improvementNote}
             </p>
           </NoteCard>

@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { buildRecordWhere, RECORDS_PAGE_SIZE } from "@/lib/records";
-import { ChartBarIcon } from "@/components/ui/icons";
 import { TagFilter } from "@/components/records/TagFilter";
 import { SearchBar } from "@/components/records/SearchBar";
 import { SyncButton } from "@/components/records/SyncButton";
 import { RecordList } from "@/components/records/RecordList";
 import { Logo } from "@/components/ui/Logo";
+import { HeaderMenu } from "@/components/ui/HeaderMenu";
 
 export default async function RecordsPage({
   searchParams,
@@ -27,19 +27,13 @@ export default async function RecordsPage({
   ]);
 
   return (
-    <div className="min-h-screen bg-stone-50">
-      <header className="sticky top-0 z-20 border-b border-zinc-100 bg-stone-50">
+    <div className="min-h-screen bg-stone-50 dark:bg-zinc-950">
+      <header className="sticky top-0 z-20 border-b border-zinc-100 bg-stone-50 dark:border-zinc-800 dark:bg-zinc-950">
         <div className="mx-auto w-full max-w-2xl px-5 pb-4 pt-8">
           <div className="flex items-start justify-between">
             <Logo />
             <div className="flex items-center gap-2">
-              <Link
-                href="/stats"
-                className="rounded-xl p-2 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800"
-                aria-label="통계"
-              >
-                <ChartBarIcon />
-              </Link>
+              <HeaderMenu />
               <SyncButton hasToken={!!instagramToken} />
               <Link
                 href="/records/new"

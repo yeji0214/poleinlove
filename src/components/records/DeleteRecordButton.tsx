@@ -19,7 +19,7 @@ export function DeleteRecordButton({ id }: { id: number }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="cursor-pointer rounded-xl p-2 text-zinc-500 transition-colors hover:bg-red-50 hover:text-red-500"
+        className="cursor-pointer rounded-xl p-2 text-zinc-500 transition-colors hover:bg-red-50 hover:text-red-500 dark:text-zinc-400 dark:hover:bg-red-950 dark:hover:text-red-400"
         aria-label="기록 삭제"
       >
         <TrashIcon />
@@ -31,13 +31,13 @@ export function DeleteRecordButton({ id }: { id: number }) {
           onClick={() => setOpen(false)}
         >
           <div
-            className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl"
+            className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl dark:bg-zinc-900"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="absolute right-4 top-4 cursor-pointer text-zinc-400 transition-colors hover:text-zinc-700"
+              className="absolute right-4 top-4 cursor-pointer text-zinc-400 transition-colors hover:text-zinc-700 dark:text-zinc-500 dark:hover:text-zinc-200"
               aria-label="닫기"
             >
               <svg
@@ -52,10 +52,10 @@ export function DeleteRecordButton({ id }: { id: number }) {
               </svg>
             </button>
 
-            <h2 className="text-lg font-bold text-zinc-900">
+            <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
               기록을 삭제할까요?
             </h2>
-            <p className="mt-1 text-sm text-zinc-500">
+            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
               삭제하면 되돌릴 수 없습니다.
             </p>
 
@@ -63,7 +63,7 @@ export function DeleteRecordButton({ id }: { id: number }) {
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="flex-1 cursor-pointer rounded-xl bg-stone-100 py-2.5 text-sm font-semibold text-zinc-700 transition-colors hover:bg-stone-200"
+                className="flex-1 cursor-pointer rounded-xl bg-stone-100 py-2.5 text-sm font-semibold text-zinc-700 transition-colors hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
               >
                 취소
               </button>

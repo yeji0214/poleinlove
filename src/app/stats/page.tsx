@@ -10,10 +10,10 @@ const TAG_LABELS: Record<string, string> = {
 };
 // 낮은 난이도일수록 옅은 색, 높을수록 진한 색
 const TAG_BAR_COLORS: Record<string, string> = {
-  입문: "bg-rose-100",
-  초급: "bg-rose-200",
-  중급: "bg-rose-400",
-  고급: "bg-rose-700",
+  입문: "bg-rose-100 dark:bg-rose-300/15",
+  초급: "bg-rose-200 dark:bg-rose-300/35",
+  중급: "bg-rose-400 dark:bg-rose-300/60",
+  고급: "bg-rose-700 dark:bg-rose-300/90",
 };
 
 export default async function StatsPage() {
@@ -57,28 +57,28 @@ export default async function StatsPage() {
   const BAR_MAX_H = 90;
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-stone-50 dark:bg-zinc-950">
       <header className="mx-auto w-full max-w-xl px-5 pb-4 pt-8">
         <BackButton fallbackHref="/records" />
       </header>
 
       <main className="mx-auto flex w-full max-w-xl flex-col px-5 pb-16">
         {/* 히어로: 총 기록 */}
-        <section className="border-b border-zinc-100 py-8 text-center">
+        <section className="border-b border-zinc-100 py-8 text-center dark:border-zinc-800">
           <p className="text-xs font-semibold tracking-[0.2em] text-rose-300">
             TOTAL RECORDS
           </p>
-          <p className="mt-2 text-7xl font-black tabular-nums leading-none text-rose-400">
+          <p className="mt-2 text-7xl font-black tabular-nums leading-none text-rose-400 dark:text-rose-300/90">
             {total}
           </p>
         </section>
 
         {/* 난이도 분포 */}
         {taggedTotal > 0 && (
-          <section className="border-b border-zinc-100 py-8">
-            <h2 className="mb-5 font-bold text-zinc-900">난이도 분포</h2>
+          <section className="border-b border-zinc-100 py-8 dark:border-zinc-800">
+            <h2 className="mb-5 font-bold text-zinc-900 dark:text-zinc-100">난이도 분포</h2>
 
-            <div className="flex h-4 w-full overflow-hidden rounded-full bg-rose-50">
+            <div className="flex h-4 w-full overflow-hidden rounded-full bg-rose-50 dark:bg-zinc-900">
               {DIFFICULTY_TAGS.map((tag) => {
                 const pct = (tagCounts[tag] / taggedTotal) * 100;
                 if (pct === 0) return null;
@@ -107,14 +107,14 @@ export default async function StatsPage() {
                             : `h-2.5 w-2.5 shrink-0 rounded-full ${TAG_BAR_COLORS[tag]}`
                         }
                       />
-                      <span className="truncate text-[11px] tracking-wide text-zinc-400">
+                      <span className="truncate text-[11px] tracking-wide text-zinc-400 dark:text-zinc-500">
                         {TAG_LABELS[tag]}
                       </span>
                     </div>
-                    <p className="mt-1 text-xl font-bold text-zinc-600">
+                    <p className="mt-1 text-xl font-bold text-zinc-600 dark:text-zinc-300">
                       {count}회
                     </p>
-                    <p className="text-xs text-rose-400">
+                    <p className="text-xs text-rose-400 dark:text-rose-300/90">
                       {tag} · {pct}%
                     </p>
                   </div>
@@ -127,8 +127,8 @@ export default async function StatsPage() {
         {/* 월별 활동량 */}
         <section className="py-8">
           <div className="mb-6 flex items-center justify-between">
-            <h2 className="font-bold text-zinc-900">월별 활동량</h2>
-            <span className="rounded-full bg-rose-50 px-3 py-1 text-xs font-medium text-rose-400">
+            <h2 className="font-bold text-zinc-900 dark:text-zinc-100">월별 활동량</h2>
+            <span className="rounded-full bg-rose-50 px-3 py-1 text-xs font-medium text-rose-400 dark:bg-zinc-900 dark:text-rose-300">
               최근 12개월
             </span>
           </div>
@@ -147,14 +147,14 @@ export default async function StatsPage() {
                   : 0;
               return (
                 <div key={i} className="flex flex-1 flex-col items-center">
-                  <span className="h-4 text-[10px] leading-4 text-zinc-400">
+                  <span className="h-4 text-[10px] leading-4 text-zinc-400 dark:text-zinc-500">
                     {m.count > 0 ? m.count : ""}
                   </span>
                   <div
-                    className="w-full rounded-t-md bg-rose-200"
+                    className="w-full rounded-t-md bg-rose-200 dark:bg-rose-300/45"
                     style={{ height: `${barH}px` }}
                   />
-                  <span className="mt-1 text-[10px] text-zinc-400">
+                  <span className="mt-1 text-[10px] text-zinc-400 dark:text-zinc-500">
                     {m.label}
                   </span>
                 </div>

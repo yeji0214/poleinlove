@@ -33,7 +33,7 @@ export function ShareRecordButton({
     <button
       type="button"
       onClick={handleShare}
-      className="relative cursor-pointer rounded-xl p-2 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800"
+      className="relative cursor-pointer rounded-xl p-2 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
       aria-label="공유 링크 복사"
     >
       <ShareIcon />
