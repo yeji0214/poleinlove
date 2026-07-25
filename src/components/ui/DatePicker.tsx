@@ -118,18 +118,18 @@ export function DatePicker({
         id={id}
         type="button"
         onClick={openPicker}
-        className={`flex w-full items-center justify-between whitespace-nowrap rounded-xl border px-3 py-2.5 text-left text-base outline-none dark:bg-zinc-900 ${
+        className={`flex w-full items-center justify-between whitespace-nowrap rounded-xl border bg-surface px-3 py-2.5 text-left text-base outline-none ${
           invalid
             ? "border-red-300 focus:border-red-400 dark:border-red-800 dark:focus:border-red-600"
-            : "border-zinc-200 focus:border-zinc-400 dark:border-zinc-700 dark:focus:border-zinc-500"
-        } ${value ? "text-zinc-700 dark:text-zinc-200" : "text-zinc-400 dark:text-zinc-500"}`}
+            : "border-border focus:border-text-muted"
+        } ${value ? "text-text-secondary" : "text-text-muted"}`}
       >
         {value ? formatDisplay(value) : "날짜 선택"}
-        <CalendarIcon className="h-4 w-4 shrink-0 text-zinc-400 dark:text-zinc-500" />
+        <CalendarIcon className="h-4 w-4 shrink-0 text-text-muted" />
       </button>
 
       {open && (
-        <div className="absolute z-20 mt-2 w-64 overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-zinc-100 dark:bg-zinc-900 dark:ring-zinc-800">
+        <div className="absolute z-20 mt-2 w-64 overflow-hidden rounded-2xl bg-surface shadow-lg ring-1 ring-divider">
           <div className="flex items-center justify-between bg-rose-300 px-3 py-2.5">
             <button
               type="button"
@@ -153,7 +153,7 @@ export function DatePicker({
             </button>
           </div>
 
-          <div className="grid grid-cols-7 px-2 pt-2 text-center text-[11px] font-medium text-zinc-400 dark:text-zinc-500">
+          <div className="grid grid-cols-7 px-2 pt-2 text-center text-[11px] font-medium text-text-muted">
             {WEEKDAYS.map((w) => (
               <div key={w} className="py-1">
                 {w}
@@ -176,12 +176,12 @@ export function DatePicker({
                   type="button"
                   disabled={isDisabled}
                   onClick={() => selectDay(day)}
-                  className={`mx-auto flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-xs transition-colors disabled:cursor-not-allowed disabled:text-zinc-300 disabled:hover:bg-transparent dark:disabled:text-zinc-700 ${
+                  className={`mx-auto flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-xs transition-colors disabled:cursor-not-allowed disabled:text-text-muted/60 disabled:hover:bg-transparent ${
                     isSelected
                       ? "bg-rose-300 font-semibold text-white"
                       : isToday
-                        ? "font-semibold text-rose-400 hover:bg-stone-100 dark:hover:bg-zinc-800"
-                        : "text-zinc-700 hover:bg-stone-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                        ? "font-semibold text-rose-400 hover:bg-surface-muted"
+                        : "text-text-secondary hover:bg-surface-muted"
                   }`}
                 >
                   {day}

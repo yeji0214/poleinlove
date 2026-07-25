@@ -57,14 +57,14 @@ export default async function StatsPage() {
   const BAR_MAX_H = 90;
 
   return (
-    <div className="min-h-screen bg-stone-50 dark:bg-zinc-950">
+    <div className="min-h-screen bg-page">
       <header className="mx-auto w-full max-w-xl px-5 pb-4 pt-8">
         <BackButton fallbackHref="/records" />
       </header>
 
       <main className="mx-auto flex w-full max-w-xl flex-col px-5 pb-16">
         {/* 히어로: 총 기록 */}
-        <section className="border-b border-zinc-100 py-8 text-center dark:border-zinc-800">
+        <section className="border-b border-divider py-8 text-center">
           <p className="text-xs font-semibold tracking-[0.2em] text-rose-300">
             TOTAL RECORDS
           </p>
@@ -75,8 +75,8 @@ export default async function StatsPage() {
 
         {/* 난이도 분포 */}
         {taggedTotal > 0 && (
-          <section className="border-b border-zinc-100 py-8 dark:border-zinc-800">
-            <h2 className="mb-5 font-bold text-zinc-900 dark:text-zinc-100">난이도 분포</h2>
+          <section className="border-b border-divider py-8">
+            <h2 className="mb-5 font-bold text-text">난이도 분포</h2>
 
             <div className="flex h-4 w-full overflow-hidden rounded-full bg-rose-50 dark:bg-zinc-900">
               {DIFFICULTY_TAGS.map((tag) => {
@@ -107,11 +107,11 @@ export default async function StatsPage() {
                             : `h-2.5 w-2.5 shrink-0 rounded-full ${TAG_BAR_COLORS[tag]}`
                         }
                       />
-                      <span className="truncate text-[11px] tracking-wide text-zinc-400 dark:text-zinc-500">
+                      <span className="truncate text-[11px] tracking-wide text-text-muted">
                         {TAG_LABELS[tag]}
                       </span>
                     </div>
-                    <p className="mt-1 text-xl font-bold text-zinc-600 dark:text-zinc-300">
+                    <p className="mt-1 text-xl font-bold text-text-secondary">
                       {count}회
                     </p>
                     <p className="text-xs text-rose-400 dark:text-rose-300/90">
@@ -127,7 +127,7 @@ export default async function StatsPage() {
         {/* 월별 활동량 */}
         <section className="py-8">
           <div className="mb-6 flex items-center justify-between">
-            <h2 className="font-bold text-zinc-900 dark:text-zinc-100">월별 활동량</h2>
+            <h2 className="font-bold text-text">월별 활동량</h2>
             <span className="rounded-full bg-rose-50 px-3 py-1 text-xs font-medium text-rose-400 dark:bg-zinc-900 dark:text-rose-300">
               최근 12개월
             </span>
@@ -147,14 +147,14 @@ export default async function StatsPage() {
                   : 0;
               return (
                 <div key={i} className="flex flex-1 flex-col items-center">
-                  <span className="h-4 text-[10px] leading-4 text-zinc-400 dark:text-zinc-500">
+                  <span className="h-4 text-[10px] leading-4 text-text-muted">
                     {m.count > 0 ? m.count : ""}
                   </span>
                   <div
                     className="w-full rounded-t-md bg-rose-200 dark:bg-rose-300/45"
                     style={{ height: `${barH}px` }}
                   />
-                  <span className="mt-1 text-[10px] text-zinc-400 dark:text-zinc-500">
+                  <span className="mt-1 text-[10px] text-text-muted">
                     {m.label}
                   </span>
                 </div>

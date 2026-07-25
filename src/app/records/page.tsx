@@ -27,8 +27,8 @@ export default async function RecordsPage({
   ]);
 
   return (
-    <div className="min-h-screen bg-stone-50 dark:bg-zinc-950">
-      <header className="sticky top-0 z-20 border-b border-zinc-100 bg-stone-50 dark:border-zinc-800 dark:bg-zinc-950">
+    <div className="min-h-screen bg-page">
+      <header className="sticky top-0 z-20 border-b border-divider bg-page">
         <div className="mx-auto w-full max-w-2xl px-5 pb-4 pt-8">
           <div className="flex items-start justify-between">
             <Logo />

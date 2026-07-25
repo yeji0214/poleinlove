@@ -124,13 +124,13 @@ export default function RecordForm({
       )}
 
       {/* 기본 정보 */}
-      <section className="rounded-2xl bg-white p-5 shadow-sm dark:bg-zinc-900">
-        <h2 className="mb-5 text-base font-bold text-zinc-900 dark:text-zinc-100">기본 정보</h2>
+      <section className="rounded-2xl bg-surface p-5 shadow-sm">
+        <h2 className="mb-5 text-base font-bold text-text">기본 정보</h2>
         <div className="mb-4 flex flex-col gap-4">
           <div className="flex flex-col gap-1">
             <label
               htmlFor="performedAt"
-              className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+              className="text-sm font-medium text-text-secondary"
             >
               날짜 <span className="text-rose-400">*</span>
             </label>
@@ -150,7 +150,7 @@ export default function RecordForm({
           <div className="flex flex-col gap-1">
             <label
               htmlFor="skillName"
-              className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+              className="text-sm font-medium text-text-secondary"
             >
               기술명 <span className="text-rose-400">*</span>
             </label>
@@ -164,10 +164,10 @@ export default function RecordForm({
               onBlur={() => setSkillNameTouched(true)}
               aria-invalid={skillNameError}
               placeholder="예) 발레리나"
-              className={`rounded-xl border px-3 py-2.5 text-base text-zinc-700 outline-none placeholder:text-zinc-400 dark:bg-zinc-900 dark:text-zinc-200 dark:placeholder:text-zinc-500 ${
+              className={`rounded-xl border px-3 py-2.5 text-base text-text-secondary outline-none placeholder:text-text-muted bg-surface ${
                 skillNameError
                   ? "border-red-300 focus:border-red-400 dark:border-red-800 dark:focus:border-red-600"
-                  : "border-zinc-200 focus:border-zinc-400 dark:border-zinc-700 dark:focus:border-zinc-500"
+                  : "border-border focus:border-text-muted"
               }`}
             />
             <p className="h-4 truncate text-xs text-red-500">
@@ -177,7 +177,7 @@ export default function RecordForm({
         </div>
         <div>
           <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">난이도 태그</p>
+            <p className="text-sm font-medium text-text-secondary">난이도 태그</p>
             {recordId && (
               <button
                 type="button"
@@ -197,8 +197,8 @@ export default function RecordForm({
                 onClick={() => toggleTag(tag)}
                 className={`cursor-pointer rounded-full px-4 py-1.5 text-sm transition-colors ${
                   selectedTags.includes(tag)
-                    ? "bg-zinc-800 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                    : "bg-stone-100 text-zinc-700 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+                    ? "bg-inverted text-inverted-text"
+                    : "bg-surface-muted text-text-secondary hover:brightness-95 dark:hover:brightness-125"
                 }`}
               >
                 {tag}
@@ -210,8 +210,8 @@ export default function RecordForm({
       </section>
 
       {/* 사진 */}
-      <section className="rounded-2xl bg-white p-5 shadow-sm dark:bg-zinc-900">
-        <h2 className="mb-4 text-base font-bold text-zinc-900 dark:text-zinc-100">사진</h2>
+      <section className="rounded-2xl bg-surface p-5 shadow-sm">
+        <h2 className="mb-4 text-base font-bold text-text">사진</h2>
 
         {imageUrls.length > 0 && (
           <div className="mb-3 grid grid-cols-3 gap-2">
@@ -249,16 +249,16 @@ export default function RecordForm({
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
-          className="flex w-full cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed border-zinc-300 py-10 transition-colors hover:border-zinc-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:hover:border-zinc-500"
+          className="flex w-full cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed border-border py-10 transition-colors hover:border-text-muted disabled:cursor-not-allowed disabled:opacity-60"
         >
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-rose-50 dark:bg-rose-950">
             <CameraIcon className="text-rose-400" />
           </div>
-          <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          <p className="text-sm font-medium text-text-secondary">
             {uploading ? "업로드 중..." : "사진 추가"}
           </p>
           {!uploading && (
-            <p className="text-xs text-zinc-400 dark:text-zinc-500">탭해서 업로드</p>
+            <p className="text-xs text-text-muted">탭해서 업로드</p>
           )}
         </button>
       </section>
@@ -273,7 +273,7 @@ export default function RecordForm({
           rows={3}
           defaultValue={defaultValues?.difficultyNote}
           placeholder="어떤 게 힘들었나요?"
-          className="w-full resize-none border-b border-zinc-200 py-2 text-base text-zinc-700 outline-none placeholder:text-zinc-400 dark:border-zinc-700 dark:text-zinc-200 dark:placeholder:text-zinc-500"
+          className="w-full resize-none border-b border-border py-2 text-base text-text-secondary outline-none placeholder:text-text-muted"
         />
       </NoteCard>
 
@@ -287,7 +287,7 @@ export default function RecordForm({
           rows={3}
           defaultValue={defaultValues?.didWellNote}
           placeholder="무엇을 잘 했나요?"
-          className="w-full resize-none border-b border-zinc-200 py-2 text-base text-zinc-700 outline-none placeholder:text-zinc-400 dark:border-zinc-700 dark:text-zinc-200 dark:placeholder:text-zinc-500"
+          className="w-full resize-none border-b border-border py-2 text-base text-text-secondary outline-none placeholder:text-text-muted"
         />
       </NoteCard>
 
@@ -301,7 +301,7 @@ export default function RecordForm({
           rows={3}
           defaultValue={defaultValues?.improvementNote}
           placeholder="다음에 신경써볼 것은?"
-          className="w-full resize-none border-b border-zinc-200 py-2 text-base text-zinc-700 outline-none placeholder:text-zinc-400 dark:border-zinc-700 dark:text-zinc-200 dark:placeholder:text-zinc-500"
+          className="w-full resize-none border-b border-border py-2 text-base text-text-secondary outline-none placeholder:text-text-muted"
         />
       </NoteCard>
 
@@ -313,7 +313,7 @@ export default function RecordForm({
         >
           {pending ? "저장 중..." : submitLabel}
         </button>
-        <p className="h-4 text-center text-xs text-zinc-400 dark:text-zinc-500">
+        <p className="h-4 text-center text-xs text-text-muted">
           {hasEmptyRequired && "날짜와 기술명을 입력하면 저장할 수 있어요"}
         </p>
       </div>

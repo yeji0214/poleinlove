@@ -28,7 +28,7 @@ export function LoginForm({ from }: { from?: string }) {
         required
         autoFocus
         placeholder="비밀번호"
-        className="rounded-xl border border-zinc-200 px-3 py-2.5 text-base text-zinc-700 outline-none placeholder:text-zinc-400 focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:placeholder:text-zinc-500 dark:focus:border-zinc-500"
+        className="rounded-xl border border-border bg-surface px-3 py-2.5 text-base text-text-secondary outline-none placeholder:text-text-muted focus:border-text-muted"
       />
 
       <button

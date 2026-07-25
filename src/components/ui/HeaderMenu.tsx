@@ -45,18 +45,18 @@ export function HeaderMenu() {
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="rounded-xl p-2 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+        className="rounded-xl p-2 text-text-secondary transition-colors hover:bg-surface-muted hover:text-text"
         aria-label="설정"
       >
         <CogIcon />
       </button>
 
       {open && (
-        <div className="absolute right-0 z-20 mt-2 w-44 overflow-hidden rounded-2xl bg-white py-1.5 shadow-lg ring-1 ring-zinc-100 dark:bg-zinc-900 dark:ring-zinc-800">
+        <div className="absolute right-0 z-20 mt-2 w-44 overflow-hidden rounded-2xl bg-surface py-1.5 shadow-lg ring-1 ring-divider">
           <Link
             href="/stats"
             onClick={() => setOpen(false)}
-            className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-zinc-700 transition-colors hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-text-secondary transition-colors hover:bg-surface-muted"
           >
             <ChartBarIcon className="h-4 w-4" />
             통계
@@ -64,7 +64,7 @@ export function HeaderMenu() {
           <button
             type="button"
             onClick={toggleDark}
-            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-zinc-700 transition-colors hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-text-secondary transition-colors hover:bg-surface-muted"
           >
             {isDark ? <SunIcon className="h-4 w-4" /> : <MoonIcon className="h-4 w-4" />}
             {isDark ? "라이트 모드" : "다크 모드"}
@@ -72,7 +72,7 @@ export function HeaderMenu() {
           <form action={logout}>
             <button
               type="submit"
-              className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-zinc-700 transition-colors hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-text-secondary transition-colors hover:bg-surface-muted"
             >
               <LogoutIcon className="h-4 w-4" />
               로그아웃
