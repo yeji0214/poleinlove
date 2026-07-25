@@ -40,7 +40,7 @@ export default async function RecordDetailPage({
               <h1 className="text-xl font-bold text-text">
                 {record.skillName || '미분류'}
               </h1>
-              <div className="mt-1 flex items-center gap-1.5 text-sm text-text-secondary">
+              <div className="mt-1 flex items-center gap-1.5 whitespace-nowrap text-sm text-text-secondary">
                 <CalendarIcon />
                 {record.performedAt.toLocaleDateString("ko-KR", {
                   year: "numeric",
