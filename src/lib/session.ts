@@ -5,7 +5,7 @@ export const SESSION_COOKIE_NAME = 'session'
 
 const MAX_AGE_SECONDS = 60 * 60 * 24 * 30 // 30일
 
-function sign(value: string) {
+export function sign(value: string) {
   return createHmac('sha256', process.env.SESSION_SECRET ?? '')
     .update(value)
     .digest('hex')
