@@ -104,3 +104,17 @@ Vercel Hobby(무료) 플랜은 Cron Job이 하루 1회로 제한된다. 처음�
 ### 별도 라우트 + CRON_SECRET으로 보호
 
 기존 `/api/instagram/sync`는 수동 동기화 버튼 전용(POST, `reset` 옵션 포함)이라 그대로 재사용하지 않고 `/api/cron/instagram-sync`(GET)를 새로 만들었다. 이 라우트는 세션 쿠키가 아니라 Vercel이 크론 요청 시 자동으로 담아 보내는 `Authorization: Bearer $CRON_SECRET` 헤더로 보호한다. `src/proxy.ts`의 matcher에서 `api/cron`을 제외해, 로그인 세션이 없는 크론 요청도 이 라우트에 한해 통과하도록 했다. `CRON_SECRET`은 Vercel 프로젝트 환경 변수로 등록한다.
+
+## 11. 사진 업로드를 상태 기반 큐로 재구현
+
+기존 `handleFileChange`는 선택한 파일들을 `for...await` 루프로 하나씩 순차 업로드하고, 실패한 파일은 `if (!error)` 분기에서 그냥 스킵됐다. 사용자에게는 실패 사실도, 실패 이유도, 재시도 방법도 전혀 노출되지 않아 "방금 고른 사진이 조용히 사라지는" 것처럼 보였다.
+
+### 상태를 명시적으로 모델링
+
+파일 하나하나를 `waiting → uploading → success` 또는 `waiting → uploading → error → waiting(재시도)`로 전이하는 독립된 항목으로 다루도록 `src/lib/uploadQueue.ts`에 리듀서를 분리했다. 상태 변경을 컴포넌트 곳곳에서 직접 하지 않고 `ADD/START/SUCCESS/FAIL/RETRY/REMOVE` 액션을 통해서만 하도록 강제해, `success`인 항목이 실수로 다시 `uploading`으로 돌아가거나 존재하지 않는 항목에 액션이 적용되는 걸 리듀서 레벨에서 막는다.
+
+이미 저장된 기존 이미지(수정 화면 진입 시 `defaultValues.images`)는 이 큐에 넣지 않고 별도의 `existingImages` 배열로 관리한다. 실제 `File` 객체가 없어 재시도가 불가능하고 삭제만 가능한, 성격이 다른 데이터이기 때문이다.
+
+### 병렬 업로드 + 클라이언트 사전 검증
+
+여러 장을 선택하면 순차 대기 없이 동시에 업로드를 시작한다. 업로드 요청을 보내기 전에 파일 크기(10MB)와 MIME 타입을 클라이언트에서 먼저 검사해, 애초에 실패할 게 뻔한 요청으로 네트워크 왕복을 낭비하지 않고 바로 실패 이유를 보여준다.

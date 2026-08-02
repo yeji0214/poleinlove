@@ -1,15 +1,24 @@
 "use client";
 
-import { useActionState, useRef, useState } from "react";
+import { useActionState, useEffect, useReducer, useRef, useState } from "react";
 import { type CreateRecordState } from "@/app/records/new/actions";
 import { PRESET_TAGS } from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
 import { getTodayDateString } from "@/lib/date";
 import {
+  uploadQueueReducer,
+  validateFile,
+  createItemId,
+  generateStoragePath,
+  type UploadItem,
+} from "@/lib/uploadQueue";
+import {
   CameraIcon,
   ExclamationIcon,
   CheckCircleIcon,
   ArrowUpCircleIcon,
+  RetryIcon,
+  SpinnerIcon,
 } from "@/components/ui/icons";
 import { NoteCard } from "@/components/ui/NoteCard";
 import { DatePicker } from "@/components/ui/DatePicker";
@@ -42,10 +51,13 @@ export default function RecordForm({
   const [selectedTags, setSelectedTags] = useState<string[]>(
     defaultValues?.tags ?? [],
   );
-  const [imageUrls, setImageUrls] = useState<string[]>(
+  // 이미 업로드가 끝난 기존 이미지(수정 화면 진입 시). 재시도 대상이 아니라
+  // 삭제만 가능하므로 새로 선택한 파일들의 업로드 큐와 분리해서 관리한다.
+  const [existingImages, setExistingImages] = useState<string[]>(
     defaultValues?.images.map((i) => i.url) ?? [],
   );
-  const [uploading, setUploading] = useState(false);
+  const [queue, dispatch] = useReducer(uploadQueueReducer, []);
+  const previewUrlsRef = useRef<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [skillName, setSkillName] = useState(defaultValues?.skillName ?? "");
   const [performedAt, setPerformedAt] = useState(
@@ -84,31 +96,82 @@ export default function RecordForm({
     );
   }
 
-  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  // 파일 하나를 Supabase Storage에 업로드하고 그 결과를 큐 상태에 반영한다.
+  // 여러 파일이 선택되면 이 함수가 파일마다 동시에(병렬로) 호출된다.
+  async function uploadItem(item: UploadItem) {
+    dispatch({ type: "START", id: item.id });
+
+    const validationError = validateFile(item.file);
+    if (validationError) {
+      dispatch({ type: "FAIL", id: item.id, errorMessage: validationError });
+      return;
+    }
+
+    const path = generateStoragePath(item.file);
+    const { error } = await supabase.storage
+      .from("record-images")
+      .upload(path, item.file);
+
+    if (error) {
+      dispatch({ type: "FAIL", id: item.id, errorMessage: "업로드에 실패했어요" });
+      return;
+    }
+
+    const { data } = supabase.storage.from("record-images").getPublicUrl(path);
+    dispatch({ type: "SUCCESS", id: item.id, url: data.publicUrl });
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
     if (files.length === 0) return;
 
-    setUploading(true);
-    for (const file of files) {
-      const ext = file.name.split(".").pop() ?? "jpg";
-      const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error } = await supabase.storage
-        .from("record-images")
-        .upload(path, file);
-      if (!error) {
-        const { data } = supabase.storage
-          .from("record-images")
-          .getPublicUrl(path);
-        setImageUrls((prev) => [...prev, data.publicUrl]);
-      }
-    }
-    setUploading(false);
+    const items: UploadItem[] = files.map((file) => ({
+      id: createItemId(),
+      file,
+      previewUrl: URL.createObjectURL(file),
+      status: "waiting",
+    }));
+
+    previewUrlsRef.current.push(...items.map((item) => item.previewUrl));
+    dispatch({ type: "ADD", items });
+    items.forEach((item) => {
+      void uploadItem(item);
+    });
+
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
-  function removeImage(url: string) {
-    setImageUrls((prev) => prev.filter((u) => u !== url));
+  function retryItem(item: UploadItem) {
+    if (item.status !== "error") return;
+    dispatch({ type: "RETRY", id: item.id });
+    void uploadItem(item);
   }
+
+  function removeExistingImage(url: string) {
+    setExistingImages((prev) => prev.filter((u) => u !== url));
+  }
+
+  function removeQueueItem(id: string) {
+    dispatch({ type: "REMOVE", id });
+  }
+
+  // 컴포넌트가 사라질 때 로컬 미리보기용으로 만든 blob URL을 정리한다.
+  // (매 렌더마다 새로 만드는 값이 아니라 계속 누적되는 ref라, 클린업 시점의
+  // 최신 목록을 그대로 참조해야 해서 반응형 의존성 규칙은 여기 적용되지 않는다.)
+  useEffect(() => {
+    return () => {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, []);
+
+  const successUrls = queue
+    .filter((item): item is UploadItem & { url: string } => item.status === "success")
+    .map((item) => item.url);
+  const allImageUrls = [...existingImages, ...successUrls];
+  const isUploading = queue.some(
+    (item) => item.status === "waiting" || item.status === "uploading",
+  );
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
@@ -213,9 +276,9 @@ export default function RecordForm({
       <section className="rounded-2xl bg-surface p-5 shadow-sm">
         <h2 className="mb-4 text-base font-bold text-text">사진</h2>
 
-        {imageUrls.length > 0 && (
+        {(existingImages.length > 0 || queue.length > 0) && (
           <div className="mb-3 grid grid-cols-3 gap-2">
-            {imageUrls.map((url) => (
+            {existingImages.map((url) => (
               <div key={url} className="relative aspect-square">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -225,11 +288,60 @@ export default function RecordForm({
                 />
                 <button
                   type="button"
-                  onClick={() => removeImage(url)}
+                  onClick={() => removeExistingImage(url)}
                   className="absolute right-1 top-1 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-black/50 text-xs text-white"
                 >
                   ×
                 </button>
+              </div>
+            ))}
+            {queue.map((item) => (
+              <div key={item.id} className="relative aspect-square">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={item.previewUrl}
+                  alt=""
+                  className="h-full w-full rounded-xl object-cover"
+                />
+                {(item.status === "waiting" || item.status === "uploading") && (
+                  <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/40">
+                    <SpinnerIcon className="text-white" />
+                  </div>
+                )}
+                {item.status === "error" && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 rounded-xl bg-black/60 p-1 text-center">
+                    <p className="text-[11px] leading-tight text-white">
+                      {item.errorMessage}
+                    </p>
+                    <div className="flex gap-1">
+                      <button
+                        type="button"
+                        onClick={() => retryItem(item)}
+                        aria-label="재시도"
+                        className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30"
+                      >
+                        <RetryIcon className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeQueueItem(item.id)}
+                        aria-label="삭제"
+                        className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-white/20 text-xs text-white hover:bg-white/30"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {item.status === "success" && (
+                  <button
+                    type="button"
+                    onClick={() => removeQueueItem(item.id)}
+                    className="absolute right-1 top-1 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-black/50 text-xs text-white"
+                  >
+                    ×
+                  </button>
+                )}
               </div>
             ))}
           </div>
@@ -243,23 +355,18 @@ export default function RecordForm({
           className="hidden"
           onChange={handleFileChange}
         />
-        <input type="hidden" name="imageUrls" value={imageUrls.join(",")} />
+        <input type="hidden" name="imageUrls" value={allImageUrls.join(",")} />
 
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
-          className="flex w-full cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed border-border py-10 transition-colors hover:border-text-muted disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex w-full cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed border-border py-10 transition-colors hover:border-text-muted"
         >
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-rose-50 dark:bg-rose-950">
             <CameraIcon className="text-rose-400" />
           </div>
-          <p className="text-sm font-medium text-text-secondary">
-            {uploading ? "업로드 중..." : "사진 추가"}
-          </p>
-          {!uploading && (
-            <p className="text-xs text-text-muted">탭해서 업로드</p>
-          )}
+          <p className="text-sm font-medium text-text-secondary">사진 추가</p>
+          <p className="text-xs text-text-muted">탭해서 업로드</p>
         </button>
       </section>
 
@@ -308,10 +415,10 @@ export default function RecordForm({
       <div className="flex flex-col gap-2">
         <button
           type="submit"
-          disabled={pending || uploading || !isValid}
+          disabled={pending || isUploading || !isValid}
           className="w-full cursor-pointer rounded-2xl bg-rose-300 py-4 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {pending ? "저장 중..." : submitLabel}
+          {pending ? "저장 중..." : isUploading ? "업로드 중..." : submitLabel}
         </button>
         <p className="h-4 text-center text-xs text-text-muted">
           {hasEmptyRequired && "날짜와 기술명을 입력하면 저장할 수 있어요"}
