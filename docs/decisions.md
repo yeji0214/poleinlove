@@ -167,4 +167,4 @@ Vercel Hobby(무료) 플랜은 Cron Job이 하루 1회로 제한된다. 처음�
 
 `.github/workflows/ci.yml`에서 `main` push와 `main` 대상 PR마다 `npm run lint` → `npm run typecheck`(신규 스크립트, `tsc --noEmit`) → `npm test` 순으로 실행한다. Node 버전은 로컬 개발 버전과 어긋나지 않도록 별도로 명시하지 않고 `.nvmrc`를 그대로 읽는다.
 
-`prisma generate`는 `postinstall` 훅으로 `npm ci` 시 자동 실행되는데, `DATABASE_URL` 없이도 스키마 파일만으로 클라이언트를 생성할 수 있어(로컬에서 `DATABASE_URL`을 일부러 비우고 확인함) CI에 별도 시크릿을 등록할 필요가 없었다.
+`prisma generate`는 `postinstall` 훅으로 `npm ci` 시 자동 실행된다. `DATABASE_URL`이 실제로 접속 가능할 필요는 없지만, `prisma.config.ts`가 이 값의 존재 자체는 요구해서 워크플로우에 가짜 값 하나를 지정해뒀다. 이 값을 알아낸 과정은 `troubleshooting.md`에 정리했다.

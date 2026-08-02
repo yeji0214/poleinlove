@@ -9,6 +9,10 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    env:
+      # prisma generate(postinstall)는 이 값이 존재하기만 하면 통과한다.
+      # 실제로 접속을 시도하지 않아 진짜 DB 자격증명을 CI에 둘 필요가 없다.
+      DATABASE_URL: "postgresql://user:password@localhost:5432/db"
     steps:
       - uses: actions/checkout@v4
 

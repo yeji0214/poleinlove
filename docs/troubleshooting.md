@@ -1,5 +1,32 @@
 # Troubleshooting
 
+## GitHub Actions CI 첫 실행이 `npm ci` 단계에서 바로 실패
+
+### 증상
+
+CI를 처음 붙이고 커밋을 푸시하자 `Run npm ci` 단계에서 바로 실패했다.
+
+```
+Failed to load config file "/home/runner/work/poleinlove/poleinlove" as a
+TypeScript/JavaScript module. Error: PrismaConfigEnvError: Missing required
+environment variable: DATABASE_URL
+```
+
+`npm ci`의 `postinstall` 훅으로 실행되는 `prisma generate`가 `DATABASE_URL`이 없다며 죽은 것이다.
+
+### 원인
+
+CI 붙이기 전에 로컬에서 `env -u DATABASE_URL -u DIRECT_URL npx prisma generate`로 "DATABASE_URL 없이도 잘 된다"고 확인했었는데, 이게 잘못된 검증이었다. `prisma.config.ts`가 최상단에서 `import "dotenv/config"`를 실행하는데, 이건 셸에서 물려받은 환경 변수와 무관하게 프로젝트 루트의 `.env` **파일을 디스크에서 직접 읽어** `process.env`에 채워 넣는다. 로컬에는 `.env` 파일이 실제로 존재해서(`DATABASE_URL` 포함), 셸에서 `env -u`로 지워봤자 `dotenv/config`가 파일에서 다시 채워 넣어 검증 자체가 무의미했다. `.env`는 `.gitignore`에 걸려 있어 CI 체크아웃본에는 애초에 존재하지 않으니, `dotenv/config`가 아무것도 채우지 못하고 `env("DATABASE_URL")`이 그대로 예외를 던졌다.
+
+### 최종 해결
+
+`.env`/`.env.local`을 실제로 다른 위치로 옮겨 디스크에서 없앤 상태로 다시 검증했다. 이 상태에서 `DATABASE_URL`에 아무 문자열이나(`postgresql://user:password@localhost:5432/db`) 넣어주면 `prisma generate`가 정상 통과한다는 걸 확인했다 — 이 값이 실제로 접속 가능한지는 검증하지 않고, 존재 여부만 확인하는 것이었다. `.github/workflows/ci.yml`의 job에 `env: DATABASE_URL: "postgresql://user:password@localhost:5432/db"`를 추가했다. 진짜 값이 필요 없으므로 GitHub Secrets에 실제 운영 DB 자격증명을 등록할 필요도 없다.
+
+### 교훈
+
+- `.env` 파일이 있는 프로젝트에서 "환경 변수 없이도 동작하는지" 검증하려면 셸 변수만 지우는 걸로는 부족하다. `dotenv` 계열 라이브러리는 파일을 직접 읽으므로, 파일 자체를 치우고 검증해야 한다.
+- 로컬 개발 환경은 대부분 `.env`가 이미 채워져 있어 "필수값이 없을 때" 상황을 무심코 재현하기 어렵다. CI처럼 정말로 빈 환경에서 한 번 돌려보는 것 자체가 이런 종류의 버그를 잡는 실질적인 값어치였다 — 역설적으로, CI를 붙이자마자 CI가 제 역할을 증명한 셈이다.
+
 ## 인스타그램 자동 동기화가 60일 뒤 조용히 끊길 뻔한 문제
 
 ### 증상
