@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { prisma } from '@/lib/prisma'
 import { supabase } from '@/lib/supabase'
+import { extractSkillFromCaption } from '@/lib/caption'
 
 const anthropic = new Anthropic()
 const DIFFICULTY_TAGS = ['입문', '초급', '중급', '고급'] as const
@@ -38,13 +39,6 @@ interface InstagramMedia {
   thumbnail_url?: string
   timestamp: string
   permalink?: string
-}
-
-function extractSkillFromCaption(caption: string | null | undefined): string {
-  if (!caption) return ''
-  const matches = [...caption.matchAll(/#pd([a-zA-Z가-힣]+)/gi)]
-  if (matches.length === 0) return ''
-  return matches.map((m) => m[1].charAt(0).toUpperCase() + m[1].slice(1)).join(' · ')
 }
 
 // 인스타그램 썸네일 URL은 며칠 후 만료되는 임시 서명 URL이라, 다운로드해서
