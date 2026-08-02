@@ -120,3 +120,9 @@ Vercel Hobby(무료) 플랜은 Cron Job이 하루 1회로 제한된다. 처음�
 ### 병렬 업로드 + 클라이언트 사전 검증
 
 여러 장을 선택하면 순차 대기 없이 동시에 업로드를 시작한다. 업로드 요청을 보내기 전에 파일 크기(10MB)와 MIME 타입을 클라이언트에서 먼저 검사해, 애초에 실패할 게 뻔한 요청으로 네트워크 왕복을 낭비하지 않고 바로 실패 이유를 보여준다.
+
+### 테스트 도입 (Vitest)
+
+`uploadQueueReducer`는 네트워크나 DOM 같은 외부 상태 없이 `(현재 상태, 액션) → 다음 상태`만 계산하는 순수 함수라 테스트하기 좋은 대상이었다. 이 프로젝트에 테스트 러너가 전혀 없어서 Vitest를 devDependency로 추가하고(`vitest.config.mts`, `src/lib/uploadQueue.test.ts`), 상태 전이 규칙(금지된 전이 포함)과 `validateFile`/`generateStoragePath`를 검증하는 테스트를 작성했다. `tsconfig.json`의 `@/*` 경로 별칭을 그대로 쓰기 위해 `vite-tsconfig-paths` 플러그인을 함께 추가했다. React 컴포넌트가 아닌 순수 로직만 대상이라 jsdom이나 Testing Library 없이 Node 환경으로 충분했다.
+
+테스트를 작성하는 과정에서 `generateStoragePath`의 "확장자가 없으면 jpg로 대체" 폴백이 실제로는 한 번도 실행되지 않는 죽은 코드였다는 걸 발견했다. `"photo".split(".").pop()`은 `undefined`가 아니라 `"photo"` 자체를 반환하기 때문에 `?? "jpg"`가 걸릴 일이 없었다. 확장자 없는 파일을 넣으면 파일명 그대로가 확장자처럼 붙는 경로가 생성되는 정도라 기능적으로 깨지진 않았지만, `.` 포함 여부로 명시적으로 분기하도록 고쳤다.

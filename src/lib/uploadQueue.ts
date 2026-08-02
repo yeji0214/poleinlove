@@ -82,6 +82,9 @@ export function createItemId(): string {
 }
 
 export function generateStoragePath(file: File): string {
-  const ext = file.name.split(".").pop() ?? "jpg";
+  const parts = file.name.split(".");
+  // split은 항상 최소 한 개의 원소를 반환하므로(빈 문자열 포함) pop()이
+  // undefined가 될 수 없다. "." 자체가 없는 경우에만 jpg로 대체한다.
+  const ext = parts.length > 1 ? parts.pop() : "jpg";
   return `${createItemId()}.${ext}`;
 }
