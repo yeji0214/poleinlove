@@ -2,7 +2,12 @@
 //
 // 상태 전이:
 //   waiting → uploading → success
-//                       ↘ error → uploading (재시도)
+//                       ↘ error
+// error는 재시도 없이 삭제만 가능하다. 실패 원인(형식/용량 초과, 업로드
+// 오류)을 구분하지 않고 항상 삭제만 허용하는 이유는 재시도 UI를 넣으려면
+// "이 실패가 재시도해서 해결될 문제인지"를 판단하는 로직이 추가로 필요한데,
+// 지금은 그 구분 없이 실패 이유만 보여주고 사용자가 다시 선택하도록
+// 단순화하는 쪽을 택했기 때문이다.
 // 금지된 전이 (reducer가 막아줌):
 //   success에서 다시 uploading으로 갈 수 없음 (이미 끝난 항목은 건드리지 않음)
 //   존재하지 않는 id에 대한 액션은 무시
@@ -25,7 +30,6 @@ export type UploadAction =
   | { type: "START"; id: string }
   | { type: "SUCCESS"; id: string; url: string }
   | { type: "FAIL"; id: string; errorMessage: string }
-  | { type: "RETRY"; id: string }
   | { type: "REMOVE"; id: string };
 
 export function uploadQueueReducer(
@@ -52,14 +56,6 @@ export function uploadQueueReducer(
       return state.map((item) =>
         item.id === action.id
           ? { ...item, status: "error", errorMessage: action.errorMessage }
-          : item,
-      );
-
-    case "RETRY":
-      // 실패한 항목만 재시도 가능. 이미 성공했거나 업로드 중인 항목은 무시.
-      return state.map((item) =>
-        item.id === action.id && item.status === "error"
-          ? { ...item, status: "waiting", errorMessage: undefined }
           : item,
       );
 

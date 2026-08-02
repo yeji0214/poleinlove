@@ -17,8 +17,8 @@ import {
   ExclamationIcon,
   CheckCircleIcon,
   ArrowUpCircleIcon,
-  RetryIcon,
   SpinnerIcon,
+  ImagePlaceholderIcon,
 } from "@/components/ui/icons";
 import { NoteCard } from "@/components/ui/NoteCard";
 import { DatePicker } from "@/components/ui/DatePicker";
@@ -139,12 +139,6 @@ export default function RecordForm({
     });
 
     if (fileInputRef.current) fileInputRef.current.value = "";
-  }
-
-  function retryItem(item: UploadItem) {
-    if (item.status !== "error") return;
-    dispatch({ type: "RETRY", id: item.id });
-    void uploadItem(item);
   }
 
   function removeExistingImage(url: string) {
@@ -297,41 +291,35 @@ export default function RecordForm({
             ))}
             {queue.map((item) => (
               <div key={item.id} className="relative aspect-square">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={item.previewUrl}
-                  alt=""
-                  className="h-full w-full rounded-xl object-cover"
-                />
+                {item.status === "error" ? (
+                  <div className="flex h-full w-full flex-col items-center justify-center gap-1 rounded-xl bg-surface-muted p-1 text-center">
+                    <ImagePlaceholderIcon className="h-6 w-6 text-text-muted" />
+                    <p className="text-[11px] leading-tight text-text-secondary">
+                      {item.errorMessage}
+                    </p>
+                  </div>
+                ) : (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={item.previewUrl}
+                    alt=""
+                    className="h-full w-full rounded-xl object-cover"
+                  />
+                )}
                 {(item.status === "waiting" || item.status === "uploading") && (
                   <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/40">
                     <SpinnerIcon className="text-white" />
                   </div>
                 )}
                 {item.status === "error" && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 rounded-xl bg-black/60 p-1 text-center">
-                    <p className="text-[11px] leading-tight text-white">
-                      {item.errorMessage}
-                    </p>
-                    <div className="flex gap-1">
-                      <button
-                        type="button"
-                        onClick={() => retryItem(item)}
-                        aria-label="재시도"
-                        className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30"
-                      >
-                        <RetryIcon className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => removeQueueItem(item.id)}
-                        aria-label="삭제"
-                        className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-white/20 text-xs text-white hover:bg-white/30"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeQueueItem(item.id)}
+                    aria-label="삭제"
+                    className="absolute right-1 top-1 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-black/50 text-xs text-white"
+                  >
+                    ×
+                  </button>
                 )}
                 {item.status === "success" && (
                   <button
