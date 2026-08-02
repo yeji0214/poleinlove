@@ -24,7 +24,6 @@ export default async function StatsPage() {
   });
 
   const total = records.length;
-  const firstDate = records[0]?.performedAt ?? null;
 
   // 난이도 분포
   const tagCounts: Record<string, number> = {

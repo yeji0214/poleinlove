@@ -11,6 +11,10 @@ export function HeaderMenu() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // layout.tsx의 플래시 방지 스크립트가 하이드레이션 전에 이미 <html>의
+    // dark 클래스를 정해두므로, 마운트 시점에 그 값을 한 번 읽어와 동기화한다.
+    // 브라우저 DOM 상태라 서버 렌더링 중에는 알 수 없어 effect가 필요하다.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsDark(document.documentElement.classList.contains("dark"));
   }, []);
 
