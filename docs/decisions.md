@@ -134,3 +134,9 @@ Vercel Hobby(무료) 플랜은 Cron Job이 하루 1회로 제한된다. 처음�
 테스트가 실제 서명 로직으로 유효한 토큰을 만들 수 있어야 해서, 모듈 내부에만 있던 `sign` 함수를 export했다. 서명 로직을 테스트 코드에 따로 복제하면 나중에 서명 방식이 바뀔 때 테스트와 구현이 따로 놀 수 있어서, 실제 함수를 그대로 재사용하는 쪽을 택했다.
 
 검증한 케이스: 정상 토큰 통과, 만료된 토큰 거부, 서명 변조 거부, 만료 시각만 변조(서명과 불일치) 거부, 다른 비밀키로 서명된 토큰 거부, 형식이 깨진 토큰(구분자 없음/서명 부분 없음)과 빈 값/null/undefined 거부.
+
+### `buildRecordWhere`, `extractSkillFromCaption` 테스트 추가
+
+`src/lib/records.ts`의 `buildRecordWhere`는 기록 목록의 검색·태그 필터 쿼리를 만드는 함수다. 여기 버그는 에러를 던지지 않고 조용히 틀린 검색 결과를 돌려주는 유형이라(`requirements.md` 시나리오 2의 핵심 기능이기도 하고), 태그만/검색어만/둘 다/둘 다 없음/빈 문자열 처리를 테스트로 고정했다.
+
+`extractSkillFromCaption`(인스타그램 캡션에서 `#pd기술명` 파싱)은 원래 `src/lib/instagram-sync.ts` 안에 있었는데, 이 파일을 그냥 import하면 최상단에서 실행되는 Supabase 클라이언트 생성(`createClient(...)`)이 환경 변수가 없는 테스트 환경에서 즉시 예외를 던져 테스트 자체가 불가능했다. Prisma/Supabase/Claude 클라이언트 초기화와 순수 파싱 로직이 한 파일에 섞여 있었던 게 원인이라, `extractSkillFromCaption`을 의존성 없는 `src/lib/caption.ts`로 분리하고 `instagram-sync.ts`에서는 그걸 import해서 쓰도록 바꿨다. 밤마다 크론으로 무인 실행되는 동기화 로직이 의존하는 파싱 규칙이라, 정규식이 의도대로 동작하는지(대소문자, 한글, 여러 해시태그, `#pd` 아닌 다른 해시태그 무시 등) 테스트로 고정해둘 가치가 있다고 판단했다.
