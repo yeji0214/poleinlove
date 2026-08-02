@@ -140,3 +140,23 @@ Vercel Hobby(무료) 플랜은 Cron Job이 하루 1회로 제한된다. 처음�
 `src/lib/records.ts`의 `buildRecordWhere`는 기록 목록의 검색·태그 필터 쿼리를 만드는 함수다. 여기 버그는 에러를 던지지 않고 조용히 틀린 검색 결과를 돌려주는 유형이라(`requirements.md` 시나리오 2의 핵심 기능이기도 하고), 태그만/검색어만/둘 다/둘 다 없음/빈 문자열 처리를 테스트로 고정했다.
 
 `extractSkillFromCaption`(인스타그램 캡션에서 `#pd기술명` 파싱)은 원래 `src/lib/instagram-sync.ts` 안에 있었는데, 이 파일을 그냥 import하면 최상단에서 실행되는 Supabase 클라이언트 생성(`createClient(...)`)이 환경 변수가 없는 테스트 환경에서 즉시 예외를 던져 테스트 자체가 불가능했다. Prisma/Supabase/Claude 클라이언트 초기화와 순수 파싱 로직이 한 파일에 섞여 있었던 게 원인이라, `extractSkillFromCaption`을 의존성 없는 `src/lib/caption.ts`로 분리하고 `instagram-sync.ts`에서는 그걸 import해서 쓰도록 바꿨다. 밤마다 크론으로 무인 실행되는 동기화 로직이 의존하는 파싱 규칙이라, 정규식이 의도대로 동작하는지(대소문자, 한글, 여러 해시태그, `#pd` 아닌 다른 해시태그 무시 등) 테스트로 고정해둘 가치가 있다고 판단했다.
+
+## 12. 동기화 진행 상황을 SSE로 실시간 스트리밍
+
+기존 "동기화" 버튼은 클릭하면 서버에서 릴스 조회 → 신규 판별 → AI 태깅 → DB 저장까지 여러 단계짜리 작업이 통째로 돈 뒤 결과만 한 번에 돌아왔다. 그동안 사용자에게는 "동기화…"라는 텍스트 하나만 보였고, 무슨 단계를 지나고 있는지 전혀 알 수 없었다.
+
+### `onProgress` 콜백으로 기존 로직에 관찰 지점만 추가
+
+`syncInstagramReels`(`src/lib/instagram-sync.ts`)의 실제 동작은 건드리지 않고, 선택적 `onProgress` 콜백 파라미터만 추가해 자연스러운 단계 전환마다(`fetching`/`diffed`/`tagging`/`saving`/`done`/`error`) 호출하도록 했다. 크론(`/api/cron/instagram-sync`)은 이 콜백을 넘기지 않으므로 기존 무인 실행 동작은 그대로다. 이벤트 타입은 `src/lib/syncProgress.ts`에 따로 뒀다.
+
+`tagging` 단계는 진행률을 정직하게 표현했다. Claude에는 한 번에 배치로 요청하는 구조라(`batchClaudeExtract`) 배치 내부의 세부 진행 상황을 알 방법이 없다. 그래서 "N/M" 같은 숫자를 지어내지 않고 진행 중이라는 사실만 보여준다. 반대로 `saving` 단계는 레코드를 한 건씩 저장하는 반복문이라 `current/total`이 실제 값이고, 여기서만 정확한 진행률을 보여준다.
+
+### 새 SSE 전용 라우트를 분리
+
+기존 `/api/instagram/sync`(POST, 논스트리밍, 크론이 호출하는 `syncInstagramReels`와 같은 시그니처)는 그대로 두고, `/api/instagram/sync-stream`(GET)을 새로 만들었다. `ReadableStream`으로 `text/event-stream` 응답을 만들고, `onProgress` 콜백 안에서 `controller.enqueue`로 각 이벤트를 그대로 흘려보낸다. GET 요청이라 브라우저 `EventSource` API를 그대로 쓸 수 있어 클라이언트 쪽 스트림 파싱 코드가 필요 없다. 별도 인증 로직도 추가하지 않았는데, `src/proxy.ts`의 matcher가 `api/instagram/callback`, `api/instagram/init`, `api/cron`만 제외하므로 이 새 경로는 기존 세션 쿠키 검사에 자동으로 걸린다.
+
+### UI: 드롭다운 체크리스트
+
+`SyncButton`을 눌렀을 때 작은 패널이 열리고, 이벤트가 올 때마다 단계별로 ○(대기)/⟳(진행 중)/✓(완료) 아이콘이 바뀐다. 신규 릴스가 0개면("새로운 기록 없음") "AI 태깅"/"저장" 두 단계는 애초에 실행되지 않으므로 화면에도 표시하지 않고, 2단계짜리 짧은 목록으로 대체한다 — 실행되지 않은 단계를 억지로 완료 표시하지 않기 위함이다. `done`을 받으면 잠깐 완료 표시를 보여준 뒤 기존과 동일하게 페이지를 새로고침한다.
+
+`EventSource`는 서버가 스트림을 정상 종료해도 기본적으로 재연결을 시도하는 프로토콜이라, `done`/`error` 이벤트를 받은 직후 클라이언트에서 명시적으로 `close()`를 호출해 불필요한 재연결을 막았다.

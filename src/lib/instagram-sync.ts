@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { prisma } from '@/lib/prisma'
 import { supabase } from '@/lib/supabase'
 import { extractSkillFromCaption } from '@/lib/caption'
+import type { SyncProgressReporter } from '@/lib/syncProgress'
 
 const anthropic = new Anthropic()
 const DIFFICULTY_TAGS = ['입문', '초급', '중급', '고급'] as const
@@ -192,9 +193,14 @@ function batchAssignTags(
 export async function syncInstagramReels(
   accessToken: string,
   skipAiTags = false,
+  onProgress?: SyncProgressReporter,
 ): Promise<{ added: number; total: number; error?: string }> {
+  onProgress?.({ stage: 'fetching' })
   const { reels, error } = await fetchAllReels(accessToken)
-  if (error || !reels) return { added: 0, total: 0, error }
+  if (error || !reels) {
+    onProgress?.({ stage: 'error', message: error ?? '릴스를 가져오지 못했어요' })
+    return { added: 0, total: 0, error }
+  }
 
   const existingRecords = await prisma.record.findMany({
     where: { instagramMediaId: { not: null } },
@@ -204,6 +210,7 @@ export async function syncInstagramReels(
 
   // 새로운 릴스만 추출
   const newReels = reels.filter((r) => !existingMap.has(r.id))
+  onProgress?.({ stage: 'diffed', total: reels.length, newCount: newReels.length })
 
   // 기존 기록 링크 업데이트
   for (const reel of reels) {
@@ -216,7 +223,10 @@ export async function syncInstagramReels(
     }
   }
 
-  if (newReels.length === 0) return { added: 0, total: reels.length }
+  if (newReels.length === 0) {
+    onProgress?.({ stage: 'done', added: 0, total: reels.length })
+    return { added: 0, total: reels.length }
+  }
 
   // #pd 해시태그로 기술명 추출, 없으면 AI 추출 대상으로 분류
   const hashtagSkillMap = new Map(
@@ -225,6 +235,7 @@ export async function syncInstagramReels(
   const noHashtagReels = newReels.filter((r) => !hashtagSkillMap.get(r.id) && r.caption)
 
   // AI 기술명 추출 + 태그 배정 + 감정 분석 (reset 시엔 스킵)
+  if (!skipAiTags) onProgress?.({ stage: 'tagging' })
   const reelsWithCaption = newReels.filter((r) => r.caption)
   const [aiSkillMap, tagMap, sentimentMap] = skipAiTags
     ? [new Map<string, string>(), new Map<string, string[]>(), new Map<string, string[]>()]
@@ -271,7 +282,9 @@ export async function syncInstagramReels(
     }
 
     added++
+    onProgress?.({ stage: 'saving', current: added, total: newReels.length })
   }
 
+  onProgress?.({ stage: 'done', added, total: reels.length })
   return { added, total: reels.length }
 }
