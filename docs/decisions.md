@@ -168,3 +168,19 @@ Vercel Hobby(무료) 플랜은 Cron Job이 하루 1회로 제한된다. 처음�
 `.github/workflows/ci.yml`에서 `main` push와 `main` 대상 PR마다 `npm run lint` → `npm run typecheck`(신규 스크립트, `tsc --noEmit`) → `npm test` 순으로 실행한다. Node 버전은 로컬 개발 버전과 어긋나지 않도록 별도로 명시하지 않고 `.nvmrc`를 그대로 읽는다.
 
 `prisma generate`는 `postinstall` 훅으로 `npm ci` 시 자동 실행된다. `DATABASE_URL`이 실제로 접속 가능할 필요는 없지만, `prisma.config.ts`가 이 값의 존재 자체는 요구해서 워크플로우에 가짜 값 하나를 지정해뒀다. 이 값을 알아낸 과정은 `troubleshooting.md`에 정리했다.
+
+## 14. 로그인 시도 횟수 제한 (Rate Limiting)
+
+`login/actions.ts`에는 비밀번호 검사 실패에 대한 횟수 제한이 전혀 없었다. 단일 공유 비밀번호 구조라, 로그인 폼을 거치지 않고 이 Server Action에 직접 반복 요청을 보내 무차별 대입을 시도할 수 있는 상태였다.
+
+### 인메모리 대신 DB에 기록
+
+Vercel 서버리스 환경에서는 요청마다 다른 인스턴스가 처리할 수 있고 인스턴스는 수시로 새로 뜬다. 실패 횟수를 그냥 모듈 스코프 변수(인메모리)에 두면 인스턴스마다 카운트가 따로 놀아서, 공격자가 여러 번 시도하다 보면 카운트가 0인 새 인스턴스에 걸려 사실상 우회된다. 그래서 이미 쓰고 있는 Postgres에 `LoginAttempt`(ip, createdAt) 테이블을 추가해 모든 인스턴스가 같은 기록을 보고 쓰도록 했다. 새 외부 서비스(Redis 등)를 추가하지 않고 기존 DB로 해결했다.
+
+### 정책: IP당 15분에 5번 실패 시 잠금
+
+`src/lib/rateLimit.ts`에 세 함수를 뒀다: `isRateLimited`(최근 15분 내 해당 IP의 실패 기록이 5개 이상인지 확인), `recordFailedAttempt`(비밀번호 실패 시 기록), `clearAttempts`(로그인 성공 시 그 IP의 기록 삭제). `login()`에서 비밀번호를 검사하기 **전에** 먼저 레이트리밋부터 확인해, 잠긴 상태에서는 정답을 입력해도 통과하지 못하게 했다(운 좋게 맞혀서 우회하는 걸 막기 위함).
+
+클라이언트 IP는 Vercel이 붙여주는 `x-forwarded-for` 헤더의 첫 번째 값에서 가져온다. 로컬 개발 환경처럼 이 헤더가 없는 경우 모든 요청이 `'unknown'`이라는 같은 키를 공유하게 되는데, 개발 환경에서는 문제가 되지 않는다고 판단해 별도 처리를 추가하지 않았다.
+
+Playwright로 실제 동작을 확인했다: 5번 실패 후 6번째 시도가 잠기고, 잠긴 동안에는 정확한 비밀번호를 입력해도 막히는 것까지 확인했다.

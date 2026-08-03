@@ -1,5 +1,42 @@
 # Troubleshooting
 
+## `prisma migrate dev`/`deploy`가 무한 대기
+
+### 증상
+
+`LoginAttempt` 테이블을 추가하려고 `npx prisma migrate dev --name add_login_attempt`를 실행했는데, 아무 진행 없이 몇 분째 멈췄다. 셸 환경변수 로드 문제인가 싶어 개발 서버를 끄고 `prisma migrate deploy`로 다시 시도해도 `Datasource "db": PostgreSQL database "postgres"...` 로그만 찍고 그대로 멈췄다.
+
+### 원인
+
+두 가지가 겹쳐 있었다.
+
+1. **`DATABASE_URL`이 PgBouncer 트랜잭션 풀링 연결**(`pgbouncer=true`, 6543 포트)이었다. `prisma migrate`는 내부적으로 advisory lock을 걸어 동시 마이그레이션을 막는데, PgBouncer 트랜잭션 풀링 모드는 세션 단위 기능(advisory lock, prepared statement)을 지원하지 않는다. Prisma와 PgBouncer 조합에서 잘 알려진 궁합 문제이고, 보통은 마이그레이션 전용으로 별도의 direct(비풀링) 연결(`directUrl`)을 두는 걸로 해결하는데 이 프로젝트엔 그게 없었다.
+2. 첫 번째 시도에서는 여기에 더해, `DATABASE_URL`에 `connection_limit=1`이 걸려 있어서 이미 떠 있던 로컬 개발 서버(`npm run dev`)가 그 하나뿐인 연결을 붙잡고 있었다. 개발 서버를 껐더니 이 원인은 빠졌지만, 1번 원인 때문에 여전히 멈췄다.
+
+일반 쿼리(`prisma.$queryRaw`)는 같은 연결로 문제없이 됐다 — 잠기는 건 마이그레이션 엔진의 락 매커니즘뿐이었다.
+
+### 최종 해결
+
+`prisma migrate dev`가 평소에 자동으로 하는 일(스키마 diff로 SQL 생성 → shadow DB에서 검증 → 실제 DB에 적용 → `_prisma_migrations`에 기록)을 손으로 나눠서 했다.
+
+1. 기존 마이그레이션 파일(`prisma/migrations/*/migration.sql`)의 스타일을 그대로 따라 SQL을 직접 작성하고 새 마이그레이션 폴더에 넣었다.
+2. 그 SQL을 `prisma.$executeRawUnsafe`로 직접 실행해 테이블을 만들었다(advisory lock을 걸지 않는 일반 쿼리 경로라 문제없이 됐다).
+3. `_prisma_migrations` 테이블에 마이그레이션이 적용됐다는 기록을 직접 INSERT했다(id, 파일 checksum, migration_name, 타임스탬프). 이렇게 해야 이후 `prisma migrate status`나 다음 마이그레이션이 "적용 안 된 마이그레이션이 있다"고 헷갈리지 않는다.
+4. `prisma generate`로 클라이언트 타입만 새로 생성했다(이건 DB 접속이 필요 없어 정상 동작한다).
+
+### 추가 조치: `directUrl` 연결
+
+위 우회는 이번 한 번만 통하는 임시방편이라, 다음에 스키마를 또 바꾸면 같은 문제를 그대로 겪는다. 그래서 정공법도 바로 적용했다. `.env`에 이미 `DIRECT_URL`(같은 Supabase pooler 호스트의 5432번 포트, session 모드 — `pgbouncer=true`나 `connection_limit`이 안 붙는다)이 있었지만 `schema.prisma`/`prisma.config.ts` 어디에도 연결돼 있지 않았다. `datasource db`에 `directUrl = env("DIRECT_URL")`을, `prisma.config.ts`의 `datasource`에도 `directUrl: env("DIRECT_URL")`을 추가했다. 이후 `prisma migrate deploy`(아까 무한 대기했던 바로 그 명령)를 다시 실행하니 즉시 "No pending migrations to apply"를 반환했다 — advisory lock이 session 모드 연결에서는 정상 동작한다는 뜻이다.
+
+이 변경으로 `prisma generate`가 이제 `DATABASE_URL`뿐 아니라 `DIRECT_URL`의 존재도 요구하게 됐다. CI(`.github/workflows/ci.yml`)에도 가짜 `DIRECT_URL` 값을 추가해야 했다 — 안 그러면 CI가 이전에 겪었던 것과 똑같은 이유로 다시 깨진다.
+
+### 교훈
+
+- Supabase의 풀링 연결 문자열(pgbouncer=true, transaction 모드)은 일반 쿼리엔 문제없지만 `prisma migrate`류 명령과는 근본적으로 안 맞는다. session 모드 연결(같은 호스트, 다른 포트)은 advisory lock을 지원해서 마이그레이션에 쓸 수 있다.
+- "멈췄다"와 "느리다"를 구분하려면 원인을 하나씩 지워봐야 한다. 개발 서버를 끄는 것(2번 원인 제거)만으로는 안 풀렸는데, 만약 그때 포기했다면 진짜 원인(1번)을 놓쳤을 것이다.
+- 마이그레이션 엔진이 막혀도 Prisma Client의 일반 쿼리는 별개로 동작할 수 있다는 걸 미리 알았다면 더 빨리 우회 경로를 찾았을 것이다.
+- `DATABASE_URL`처럼 필수값 요구 사항이 하나 늘어날 때마다, 그 값이 필요한 모든 곳(로컬 `.env`, CI 워크플로우)을 함께 챙겨야 한다는 걸 두 번째로 겪었다.
+
 ## GitHub Actions CI 첫 실행이 `npm ci` 단계에서 바로 실패
 
 ### 증상
