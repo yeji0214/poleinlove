@@ -48,7 +48,12 @@ export function uploadQueueReducer(
     case "SUCCESS":
       return state.map((item) =>
         item.id === action.id
-          ? { ...item, status: "success", url: action.url, errorMessage: undefined }
+          ? {
+              ...item,
+              status: "success",
+              url: action.url,
+              errorMessage: undefined,
+            }
           : item,
       );
 
@@ -70,8 +75,8 @@ export function uploadQueueReducer(
 // 파일 선택 시점의 사전 검증. 업로드 요청 자체를 보내기 전에 걸러서
 // 불필요한 네트워크 왕복 없이 바로 실패 이유를 보여준다.
 export function validateFile(file: File): string | null {
-  if (!file.type.startsWith("image/")) return "이미지 파일만 업로드할 수 있어요";
-  if (file.size > MAX_FILE_SIZE) return "파일 크기는 10MB를 넘을 수 없어요";
+  if (!file.type.startsWith("image/")) return "이미지 파일만 업로드 가능";
+  if (file.size > MAX_FILE_SIZE) return "10MB 이하 이미지만 업로드 가능";
   return null;
 }
 

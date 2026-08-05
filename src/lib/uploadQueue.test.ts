@@ -22,7 +22,10 @@ describe("uploadQueueReducer", () => {
     const existing = [makeItem({ id: "a" })];
     const incoming = [makeItem({ id: "b" }), makeItem({ id: "c" })];
 
-    const result = uploadQueueReducer(existing, { type: "ADD", items: incoming });
+    const result = uploadQueueReducer(existing, {
+      type: "ADD",
+      items: incoming,
+    });
 
     expect(result.map((i) => i.id)).toEqual(["a", "b", "c"]);
   });
@@ -38,7 +41,11 @@ describe("uploadQueueReducer", () => {
 
   it("SUCCESS는 상태를 success로 바꾸고 url을 채우며 이전 에러 메시지를 지운다", () => {
     const state = [
-      makeItem({ id: "a", status: "uploading", errorMessage: "이전 실패 메시지" }),
+      makeItem({
+        id: "a",
+        status: "uploading",
+        errorMessage: "이전 실패 메시지",
+      }),
     ];
 
     const result = uploadQueueReducer(state, {
@@ -116,14 +123,14 @@ describe("uploadQueueReducer", () => {
 describe("validateFile", () => {
   it("이미지가 아닌 파일은 거부한다", () => {
     const file = new File(["x"], "doc.pdf", { type: "application/pdf" });
-    expect(validateFile(file)).toBe("이미지 파일만 업로드할 수 있어요");
+    expect(validateFile(file)).toBe("이미지 파일만 업로드 가능");
   });
 
   it(`${MAX_FILE_SIZE / 1024 / 1024}MB를 초과하는 파일은 거부한다`, () => {
     const file = new File([new Uint8Array(MAX_FILE_SIZE + 1)], "big.jpg", {
       type: "image/jpeg",
     });
-    expect(validateFile(file)).toBe("파일 크기는 10MB를 넘을 수 없어요");
+    expect(validateFile(file)).toBe("10MB 이하 이미지만 업로드 가능");
   });
 
   it("크기 제한 이하의 이미지 파일은 통과한다", () => {

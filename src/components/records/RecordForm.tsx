@@ -113,7 +113,7 @@ export default function RecordForm({
       .upload(path, item.file);
 
     if (error) {
-      dispatch({ type: "FAIL", id: item.id, errorMessage: "업로드에 실패했어요" });
+      dispatch({ type: "FAIL", id: item.id, errorMessage: "업로드 실패" });
       return;
     }
 
